@@ -1,0 +1,69 @@
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.3)
+
+2025-06-28T22:11:18.431-03:00  INFO 21241 --- [delivery-api] [  restartedMain] c.d.delivery.DeliveryApiApplication      : Starting DeliveryApiApplication using Java 21.0.7 with PID 21241 (/Users/robson/Documents/delivery-api-robson/target/classes started by robson in /Users/robson/Documents/delivery-api-robson)
+2025-06-28T22:11:18.431-03:00  INFO 21241 --- [delivery-api] [  restartedMain] c.d.delivery.DeliveryApiApplication      : No active profile set, falling back to 1 default profile: "default"
+2025-06-28T22:11:18.487-03:00  INFO 21241 --- [delivery-api] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-28T22:11:18.488-03:00  INFO 21241 --- [delivery-api] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 0 ms. Found 0 JPA repository interfaces.
+2025-06-28T22:11:18.527-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-06-28T22:11:18.528-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-06-28T22:11:18.528-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.42]
+2025-06-28T22:11:18.531-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-06-28T22:11:18.531-03:00  INFO 21241 --- [delivery-api] [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 99 ms
+2025-06-28T22:11:18.550-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-28T22:11:18.551-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-06-28T22:11:18.556-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-28T22:11:18.556-03:00  INFO 21241 --- [delivery-api] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2025-06-28T22:11:18.558-03:00  INFO 21241 --- [delivery-api] [  restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:deliverydb user=SA
+2025-06-28T22:11:18.558-03:00  INFO 21241 --- [delivery-api] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2025-06-28T22:11:18.558-03:00  WARN 21241 --- [delivery-api] [  restartedMain] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-28T22:11:18.558-03:00  INFO 21241 --- [delivery-api] [  restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+        Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-2)']
+        Database driver: undefined/unknown
+        Database version: 2.3.232
+        Autocommit mode: undefined/unknown
+        Isolation level: undefined/unknown
+        Minimum pool size: undefined/unknown
+        Maximum pool size: undefined/unknown
+2025-06-28T22:11:18.565-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-28T22:11:18.565-03:00  INFO 21241 --- [delivery-api] [  restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-28T22:11:18.586-03:00 DEBUG 21241 --- [delivery-api] [  restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : 5 mappings in 'requestMappingHandlerMapping'
+2025-06-28T22:11:18.603-03:00 DEBUG 21241 --- [delivery-api] [  restartedMain] o.s.w.s.handler.SimpleUrlHandlerMapping  : Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
+2025-06-28T22:11:18.606-03:00 DEBUG 21241 --- [delivery-api] [  restartedMain] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-06-28T22:11:18.611-03:00 DEBUG 21241 --- [delivery-api] [  restartedMain] .m.m.a.ExceptionHandlerExceptionResolver : ControllerAdvice beans: 0 @ExceptionHandler, 1 ResponseBodyAdvice
+2025-06-28T22:11:18.623-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:deliverydb'
+2025-06-28T22:11:18.631-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-06-28T22:11:18.635-03:00  INFO 21241 --- [delivery-api] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-06-28T22:11:18.637-03:00  INFO 21241 --- [delivery-api] [  restartedMain] c.d.delivery.DeliveryApiApplication      : Started DeliveryApiApplication in 0.218 seconds (process running for 174.899)
+2025-06-28T22:11:18.638-03:00  INFO 21241 --- [delivery-api] [  restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2025-06-28T22:11:27.178-03:00  INFO 21241 --- [delivery-api] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-28T22:11:27.178-03:00  INFO 21241 --- [delivery-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-06-28T22:11:27.179-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected StandardServletMultipartResolver
+2025-06-28T22:11:27.179-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected AcceptHeaderLocaleResolver
+2025-06-28T22:11:27.179-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected FixedThemeResolver
+2025-06-28T22:11:27.180-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@1586687a
+2025-06-28T22:11:27.181-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.support.SessionFlashMapManager@3c80b882
+2025-06-28T22:11:27.181-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2025-06-28T22:11:27.181-03:00  INFO 21241 --- [delivery-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2025-06-28T22:11:27.182-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : GET "/", parameters={}
+2025-06-28T22:11:27.183-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.deliverytech.delivery.controller.HealthController#hello()
+2025-06-28T22:11:27.197-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] m.m.a.RequestResponseBodyMethodProcessor : Using 'text/html', given [text/html, application/xhtml+xml, image/avif, image/webp, image/apng, application/xml;q=0.9, */*;q=0.8, application/signed-exchange;v=b3;q=0.7] and supported [text/plain, */*, application/json, application/*+json]
+2025-06-28T22:11:27.197-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] m.m.a.RequestResponseBodyMethodProcessor : Writing ["Hello World!!"]
+2025-06-28T22:11:27.201-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2025-06-28T22:12:48.979-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-4] o.s.web.servlet.DispatcherServlet        : GET "/health", parameters={}
+2025-06-28T22:12:48.981-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-4] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.deliverytech.delivery.controller.HealthController#health()
+2025-06-28T22:12:49.023-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-4] m.m.a.RequestResponseBodyMethodProcessor : Using 'application/json;q=0.8', given [text/html, application/xhtml+xml, image/avif, image/webp, image/apng, application/xml;q=0.9, */*;q=0.8, application/signed-exchange;v=b3;q=0.7] and supported [application/json, application/*+json]
+2025-06-28T22:12:49.025-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-4] m.m.a.RequestResponseBodyMethodProcessor : Writing [{Status=UP, javaVersion=21.0.7, timestamp=2025-06-28T22:12:48.983562, service=Delivery API}]
+2025-06-28T22:12:49.037-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-4] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+2025-06-28T22:13:44.080-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-7] o.s.web.servlet.DispatcherServlet        : GET "/info", parameters={}
+2025-06-28T22:13:44.082-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-7] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.deliverytech.delivery.controller.HealthController#info()
+2025-06-28T22:13:44.121-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-7] m.m.a.RequestResponseBodyMethodProcessor : Using 'application/json;q=0.8', given [text/html, application/xhtml+xml, image/avif, image/webp, image/apng, application/xml;q=0.9, */*;q=0.8, application/signed-exchange;v=b3;q=0.7] and supported [application/json, application/*+json]
+2025-06-28T22:13:44.128-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-7] m.m.a.RequestResponseBodyMethodProcessor : Writing [AppInfo[application=Delivery Tech API, version=1.0.0, developer=Robson Koji, javaVersion=JDK 21, fra (truncated)...]
+2025-06-28T22:13:44.129-03:00 DEBUG 21241 --- [delivery-api] [nio-8080-exec-7] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
+
