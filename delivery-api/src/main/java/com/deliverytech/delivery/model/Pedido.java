@@ -1,4 +1,4 @@
-package com.deliverytech.delivery.entity;
+package com.deliverytech.delivery.model;
 
 import com.deliverytech.delivery.enums.StatusPedido;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,6 +13,7 @@ import java.util.List;
 @Entity
 @Data
 public class Pedido {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,6 +26,9 @@ public class Pedido {
     private String observacoes;
     private String numero;
     private String numeroPedido;
+    private LocalDateTime dataCriacao;
+
+
 
     @Enumerated(EnumType.STRING)
     private StatusPedido status;
@@ -37,29 +41,38 @@ public class Pedido {
     @JoinColumn(name = "restaurante_id")
     private Restaurante restaurante;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<ItemPedido> itens;
 
     public void adicionarItem(ItemPedido item) {
         itens.add(item);
-        item.setPedido(this); // para manter o relacionamento bidirecional consistente
+        item.setPedido(this);
     }
 
     public void confirmar() {
         this.status = StatusPedido.CONFIRMADO;
     }
 
-    public String getObservacoes() {
-    return observacoes;
+    public void calcularValores() {
+        this.subtotal = itens.stream()
+            .map(ItemPedido::getSubtotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (taxaEntrega == null) {
+            taxaEntrega = BigDecimal.ZERO;
+        }
+
+        this.valorTotal = subtotal.add(taxaEntrega);
     }
 
-    public void setObservacoes(String observacoes) {
-        this.observacoes = observacoes;
-    }
+   public void setDataCriacao(LocalDateTime dataCriacao) {
+    this.dataCriacao = dataCriacao;
+   }
 
-    @OneToMany(mappedBy = "pedido")
-    @JsonIgnore
-    private List<ItemPedido> itensPedido;
+    public void calcularValorTotal() {
+        this.valorTotal = itens.stream()
+            .map(ItemPedido::getPrecoTotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }
- 

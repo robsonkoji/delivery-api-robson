@@ -1,4 +1,4 @@
-package com.deliverytech.delivery.entity;
+package com.deliverytech.delivery.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -30,6 +30,19 @@ public class Restaurante {
     public void reativar() {
     this.ativo = true;
     }
+
+    public Restaurante() {
+    }
+
+    public Restaurante(Long id, String nome, String categoria, String endereco, String telefone, BigDecimal taxaEntrega, boolean ativo) {
+        this.id = id;
+        this.nome = nome;
+        this.categoria = categoria;
+        this.endereco = endereco;
+        this.telefone = telefone;
+        this.taxaEntrega = taxaEntrega;
+        this.ativo = ativo;
+        }
 
 
 

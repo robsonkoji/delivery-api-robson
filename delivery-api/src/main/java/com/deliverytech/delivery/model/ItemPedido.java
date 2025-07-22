@@ -1,4 +1,4 @@
-package com.deliverytech.delivery.entity;
+package com.deliverytech.delivery.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 @Entity
 @Data
 public class ItemPedido {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -15,6 +16,7 @@ public class ItemPedido {
     private int quantidade;
     private BigDecimal precoUnitario;
     private BigDecimal subtotal;
+    private BigDecimal precoTotal;
 
 
     @ManyToOne
@@ -25,15 +27,17 @@ public class ItemPedido {
     @JoinColumn(name = "produto_id")
     private Produto produto;
 
-    public void calcularSubtotal() {
-        if (precoUnitario != null) {
-            this.subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
-        } else {
-            this.subtotal = BigDecimal.ZERO;
-        }
+ 
+
+ 
+
+    public ItemPedido(Long id, Produto produto, Integer quantidade, BigDecimal precoUnitario, Pedido pedido) {
+        this.id = id;
+        this.produto = produto;
+        this.quantidade = quantidade;
+        this.precoUnitario = precoUnitario;
+        this.pedido = pedido;
+        this.precoTotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
     }
 
-    public BigDecimal getSubtotal() {
-        return subtotal;
-    }
 }
