@@ -2,7 +2,7 @@
 
 ### 📁 ClienteRepository
 
-![](praticas/pratica-3/atividade1/ClienteRepository.png)
+![](ClienteRepository.png)
 ---
 - `findByEmail(String email)` → busca cliente pelo email
 - `findByAtivoTrue()` → lista clientes ativos
@@ -11,7 +11,7 @@
 
 ### 📁 RestauranteRepository
 
-![](praticas/pratica-3/atividade1/RestauranteRepository.png)
+![](RestauranteRepository.png)
 ---
 - `findByCategoria(String categoria)` → restaurantes da mesma categoria
 - `findByAtivoTrue()` → restaurantes ativos
@@ -20,7 +20,7 @@
 
 ### 📁 ProdutoRepository
 
-![](praticas/pratica-3/atividade1/ProdutoRepository.png)
+![](ProdutoRepository.png)
 ---
 - `findByRestauranteId(Long restauranteId)` → produtos de um restaurante
 - `findByDisponivelTrue()` → produtos disponíveis
@@ -29,7 +29,7 @@
 
 ### 📁 PedidoRepository
 
-![](praticas/pratica-3/atividade1/PedidoRepository.png)
+![](PedidoRepository.png)
 ---
 - `findByClienteId(Long clienteId)` → pedidos de um cliente
 - `findByStatus(StatusPedido status)` → pedidos por status
