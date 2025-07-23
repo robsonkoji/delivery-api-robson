@@ -1,0 +1,558 @@
+ ✘ robson@MacBook-Air-de-Robson  ~/Documents/delivery-api-robson/delivery-api   pratica03 ±  ./mvnw test
+
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.deliverytech:delivery-api:jar:0.0.1
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.projectlombok:lombok:jar -> version 1.18.26 vs (?) @ line 46, column 15
+[WARNING] 'dependencies.dependency.scope' for org.projectlombok:lombok:jar must be one of [provided, compile, runtime, test, system] but is 'annotationProcessor'. @ line 49, column 11
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] -------------------< com.deliverytech:delivery-api >--------------------
+[INFO] Building delivery-api 0.0.1
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ delivery-api ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ delivery-api ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ delivery-api ---
+[INFO] skip non existing resourceDirectory /Users/robson/Documents/delivery-api-robson/delivery-api/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ delivery-api ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.3:test (default-test) @ delivery-api ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.deliverytech.delivery.DeliveryApiApplicationTests
+21:54:03.055 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.deliverytech.delivery.DeliveryApiApplicationTests]: DeliveryApiApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+21:54:03.102 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.deliverytech.delivery.DeliveryApiApplication for test class com.deliverytech.delivery.DeliveryApiApplicationTests
+21:54:03.169 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.3)
+
+2025-07-22T21:54:03.304-03:00  INFO 45740 --- [delivery-api] [           main] c.d.d.DeliveryApiApplicationTests        : Starting DeliveryApiApplicationTests using Java 21.0.7 with PID 45740 (started by robson in /Users/robson/Documents/delivery-api-robson/delivery-api)
+2025-07-22T21:54:03.305-03:00  INFO 45740 --- [delivery-api] [           main] c.d.d.DeliveryApiApplicationTests        : No active profile set, falling back to 1 default profile: "default"
+2025-07-22T21:54:03.318-03:00 DEBUG 45740 --- [delivery-api] [           main] o.s.w.c.s.GenericWebApplicationContext   : Refreshing org.springframework.web.context.support.GenericWebApplicationContext@2a3a299
+2025-07-22T21:54:03.712-03:00  INFO 45740 --- [delivery-api] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-07-22T21:54:03.739-03:00  INFO 45740 --- [delivery-api] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 21 ms. Found 4 JPA repository interfaces.
+2025-07-22T21:54:03.916-03:00  INFO 45740 --- [delivery-api] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-07-22T21:54:03.941-03:00  INFO 45740 --- [delivery-api] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.2.6.Final
+2025-07-22T21:54:03.942-03:00  INFO 45740 --- [delivery-api] [           main] org.hibernate.cfg.Environment            : HHH000406: Using bytecode reflection optimizer
+2025-07-22T21:54:03.997-03:00  INFO 45740 --- [delivery-api] [           main] o.h.b.i.BytecodeProviderInitiator        : HHH000021: Bytecode provider name : bytebuddy
+2025-07-22T21:54:04.060-03:00  INFO 45740 --- [delivery-api] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-07-22T21:54:04.068-03:00  INFO 45740 --- [delivery-api] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-07-22T21:54:04.154-03:00  INFO 45740 --- [delivery-api] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:deliverydb user=SA
+2025-07-22T21:54:04.155-03:00  INFO 45740 --- [delivery-api] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-07-22T21:54:04.276-03:00  INFO 45740 --- [delivery-api] [           main] o.h.b.i.BytecodeProviderInitiator        : HHH000021: Bytecode provider name : bytebuddy
+2025-07-22T21:54:04.511-03:00  INFO 45740 --- [delivery-api] [           main] o.h.m.i.EntityInstantiatorPojoStandard   : HHH000182: No default (no-argument) constructor for class: com.deliverytech.delivery.model.ItemPedido (class must be instantiated by Interceptor)
+2025-07-22T21:54:04.593-03:00  INFO 45740 --- [delivery-api] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+Hibernate: 
+    create table cliente (
+        id bigint generated by default as identity,
+        ativo boolean not null,
+        email varchar(255),
+        nome varchar(255),
+        telefone varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    create table item_pedido (
+        id bigint generated by default as identity,
+        preco_total numeric(38,2),
+        preco_unitario numeric(38,2),
+        quantidade integer not null,
+        subtotal numeric(38,2),
+        pedido_id bigint,
+        produto_id bigint,
+        primary key (id)
+    )
+Hibernate: 
+    create table pedido (
+        id bigint generated by default as identity,
+        data_criacao timestamp(6),
+        data_pedido timestamp(6),
+        endereco_entrega varchar(255),
+        numero varchar(255),
+        numero_pedido varchar(255),
+        observacoes varchar(255),
+        status varchar(255) check (status in ('CRIADO','PENDENTE','CONFIRMADO','PREPARANDO','SAIU_PARA_ENTREGA','ENTREGUE','CANCELADO')),
+        subtotal numeric(38,2),
+        taxa_entrega numeric(38,2),
+        valor_total numeric(38,2),
+        cliente_id bigint,
+        restaurante_id bigint,
+        primary key (id)
+    )
+Hibernate: 
+    create table produto (
+        id bigint generated by default as identity,
+        categoria varchar(255),
+        descricao varchar(255),
+        disponivel boolean not null,
+        nome varchar(255),
+        preco numeric(38,2),
+        restaurante_id bigint,
+        primary key (id)
+    )
+Hibernate: 
+    create table restaurante (
+        id bigint generated by default as identity,
+        ativo boolean not null,
+        avaliacao numeric(38,2),
+        categoria varchar(255),
+        endereco varchar(255),
+        nome varchar(255),
+        taxa_entrega numeric(38,2),
+        telefone varchar(255),
+        primary key (id)
+    )
+Hibernate: 
+    alter table if exists item_pedido 
+       add constraint FK60ym08cfoysa17wrn1swyiuda 
+       foreign key (pedido_id) 
+       references pedido
+Hibernate: 
+    alter table if exists item_pedido 
+       add constraint FKtk55mn6d6bvl5h0no5uagi3sf 
+       foreign key (produto_id) 
+       references produto
+Hibernate: 
+    alter table if exists pedido 
+       add constraint FK30s8j2ktpay6of18lbyqn3632 
+       foreign key (cliente_id) 
+       references cliente
+Hibernate: 
+    alter table if exists pedido 
+       add constraint FK3eud5cqmgsnltyk704hu3qj71 
+       foreign key (restaurante_id) 
+       references restaurante
+Hibernate: 
+    alter table if exists produto 
+       add constraint FKb9jhjyghjcn25guim7q4pt8qx 
+       foreign key (restaurante_id) 
+       references restaurante
+2025-07-22T21:54:04.629-03:00  INFO 45740 --- [delivery-api] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-07-22T21:54:04.794-03:00  INFO 45740 --- [delivery-api] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-07-22T21:54:05.167-03:00  INFO 45740 --- [delivery-api] [           main] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2025-07-22T21:54:05.196-03:00 DEBUG 45740 --- [delivery-api] [           main] s.w.s.m.m.a.RequestMappingHandlerMapping : 35 mappings in 'requestMappingHandlerMapping'
+2025-07-22T21:54:05.248-03:00 DEBUG 45740 --- [delivery-api] [           main] o.s.w.s.handler.SimpleUrlHandlerMapping  : Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
+2025-07-22T21:54:05.261-03:00 DEBUG 45740 --- [delivery-api] [           main] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-07-22T21:54:05.290-03:00 DEBUG 45740 --- [delivery-api] [           main] .m.m.a.ExceptionHandlerExceptionResolver : ControllerAdvice beans: 0 @ExceptionHandler, 1 ResponseBodyAdvice
+2025-07-22T21:54:05.405-03:00  INFO 45740 --- [delivery-api] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:deliverydb'
+2025-07-22T21:54:05.416-03:00  INFO 45740 --- [delivery-api] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2025-07-22T21:54:05.457-03:00  INFO 45740 --- [delivery-api] [           main] c.d.d.DeliveryApiApplicationTests        : Started DeliveryApiApplicationTests in 2.294 seconds (process running for 2.703)
+🔁 Carregando dados de teste...
+Hibernate: 
+    insert 
+    into
+        cliente
+        (ativo,email,nome,telefone,id) 
+    values
+        (?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        cliente
+        (ativo,email,nome,telefone,id) 
+    values
+        (?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        cliente
+        (ativo,email,nome,telefone,id) 
+    values
+        (?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        restaurante
+        (ativo,avaliacao,categoria,endereco,nome,taxa_entrega,telefone,id) 
+    values
+        (?,?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        restaurante
+        (ativo,avaliacao,categoria,endereco,nome,taxa_entrega,telefone,id) 
+    values
+        (?,?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        produto
+        (categoria,descricao,disponivel,nome,preco,restaurante_id,id) 
+    values
+        (?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        produto
+        (categoria,descricao,disponivel,nome,preco,restaurante_id,id) 
+    values
+        (?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        produto
+        (categoria,descricao,disponivel,nome,preco,restaurante_id,id) 
+    values
+        (?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        produto
+        (categoria,descricao,disponivel,nome,preco,restaurante_id,id) 
+    values
+        (?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        produto
+        (categoria,descricao,disponivel,nome,preco,restaurante_id,id) 
+    values
+        (?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        pedido
+        (cliente_id,data_criacao,data_pedido,endereco_entrega,numero,numero_pedido,observacoes,restaurante_id,status,subtotal,taxa_entrega,valor_total,id) 
+    values
+        (?,?,?,?,?,?,?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        item_pedido
+        (pedido_id,preco_total,preco_unitario,produto_id,quantidade,subtotal,id) 
+    values
+        (?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        item_pedido
+        (pedido_id,preco_total,preco_unitario,produto_id,quantidade,subtotal,id) 
+    values
+        (?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        pedido
+        (cliente_id,data_criacao,data_pedido,endereco_entrega,numero,numero_pedido,observacoes,restaurante_id,status,subtotal,taxa_entrega,valor_total,id) 
+    values
+        (?,?,?,?,?,?,?,?,?,?,?,?,default)
+Hibernate: 
+    insert 
+    into
+        item_pedido
+        (pedido_id,preco_total,preco_unitario,produto_id,quantidade,subtotal,id) 
+    values
+        (?,?,?,?,?,?,default)
+✅ Dados carregados com sucesso.
+🔍 Clientes ativos:
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.ativo,
+        c1_0.email,
+        c1_0.nome,
+        c1_0.telefone 
+    from
+        cliente c1_0 
+    where
+        c1_0.ativo
+Cliente(id=1, nome=João Silva, email=joao@email.com, telefone=11999999999, ativo=true, pedidos=null)
+Cliente(id=2, nome=Maria Oliveira, email=maria@email.com, telefone=11988888888, ativo=true, pedidos=null)
+Cliente(id=3, nome=Carlos Souza, email=carlos@email.com, telefone=11977777777, ativo=true, pedidos=null)
+📧 Buscar cliente por email:
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.ativo,
+        c1_0.email,
+        c1_0.nome,
+        c1_0.telefone 
+    from
+        cliente c1_0 
+    where
+        c1_0.email=?
+Optional[Cliente(id=1, nome=João Silva, email=joao@email.com, telefone=11999999999, ativo=true, pedidos=null)]
+📧 Verificar se email já cadastrado:
+Hibernate: 
+    select
+        c1_0.id 
+    from
+        cliente c1_0 
+    where
+        c1_0.email=? fetch first ? rows only
+true
+🍕 Restaurantes da mesma categoria (Pizzaria):
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.ativo,
+        r1_0.avaliacao,
+        r1_0.categoria,
+        r1_0.endereco,
+        r1_0.nome,
+        r1_0.taxa_entrega,
+        r1_0.telefone 
+    from
+        restaurante r1_0 
+    where
+        r1_0.categoria=?
+Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null)
+🏪 Restaurantes ativos:
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.ativo,
+        r1_0.avaliacao,
+        r1_0.categoria,
+        r1_0.endereco,
+        r1_0.nome,
+        r1_0.taxa_entrega,
+        r1_0.telefone 
+    from
+        restaurante r1_0 
+    where
+        r1_0.ativo
+Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null)
+Restaurante(id=2, nome=Sushi Yama, categoria=restaurante, endereco=Av. Japão, 200, telefone=1144445555, taxaEntrega=6.9, ativo=true, produtos=null, pedidos=null, avaliacao=null)
+🍽️ Restaurantes com taxa <= 5.00:
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.ativo,
+        r1_0.avaliacao,
+        r1_0.categoria,
+        r1_0.endereco,
+        r1_0.nome,
+        r1_0.taxa_entrega,
+        r1_0.telefone 
+    from
+        restaurante r1_0 
+    where
+        r1_0.taxa_entrega<=?
+Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null)
+🍣 Produtos do restaurante Sushi Yama:
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.ativo,
+        r1_0.avaliacao,
+        r1_0.categoria,
+        r1_0.endereco,
+        r1_0.nome,
+        r1_0.taxa_entrega,
+        r1_0.telefone 
+    from
+        restaurante r1_0 
+    where
+        r1_0.nome=?
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.categoria,
+        p1_0.descricao,
+        p1_0.disponivel,
+        p1_0.nome,
+        p1_0.preco,
+        p1_0.restaurante_id 
+    from
+        produto p1_0 
+    where
+        p1_0.restaurante_id=?
+Produto(id=3, nome=Temaki Salmão, descricao=Temaki Salmão, preco=30.00, categoria=comida japonesa, disponivel=true, restaurante=Restaurante(id=2, nome=Sushi Yama, categoria=restaurante, endereco=Av. Japão, 200, telefone=1144445555, taxaEntrega=6.9, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+Produto(id=4, nome=Sushi Combo, descricao=Sushi Combo, preco=55.00, categoria=comida japonesa, disponivel=true, restaurante=Restaurante(id=2, nome=Sushi Yama, categoria=restaurante, endereco=Av. Japão, 200, telefone=1144445555, taxaEntrega=6.9, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+🔠 5 primeiros restaurantes em ordem alfabética:
+Hibernate: 
+    select
+        r1_0.id,
+        r1_0.ativo,
+        r1_0.avaliacao,
+        r1_0.categoria,
+        r1_0.endereco,
+        r1_0.nome,
+        r1_0.taxa_entrega,
+        r1_0.telefone 
+    from
+        restaurante r1_0 
+    order by
+        r1_0.nome
+Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null)
+Restaurante(id=2, nome=Sushi Yama, categoria=restaurante, endereco=Av. Japão, 200, telefone=1144445555, taxaEntrega=6.9, ativo=true, produtos=null, pedidos=null, avaliacao=null)
+🛒 Produtos disponíveis:
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.categoria,
+        p1_0.descricao,
+        p1_0.disponivel,
+        p1_0.nome,
+        p1_0.preco,
+        p1_0.restaurante_id 
+    from
+        produto p1_0 
+    where
+        p1_0.disponivel
+Produto(id=1, nome=Pizza Margherita, descricao=Pizza Margherita, preco=40.00, categoria=pizza, disponivel=true, restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+Produto(id=2, nome=Pizza Calabresa, descricao=Pizza Calabresa, preco=45.00, categoria=pizza, disponivel=true, restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+Produto(id=3, nome=Temaki Salmão, descricao=Temaki Salmão, preco=30.00, categoria=comida japonesa, disponivel=true, restaurante=Restaurante(id=2, nome=Sushi Yama, categoria=restaurante, endereco=Av. Japão, 200, telefone=1144445555, taxaEntrega=6.9, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+Produto(id=4, nome=Sushi Combo, descricao=Sushi Combo, preco=55.00, categoria=comida japonesa, disponivel=true, restaurante=Restaurante(id=2, nome=Sushi Yama, categoria=restaurante, endereco=Av. Japão, 200, telefone=1144445555, taxaEntrega=6.9, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+Produto(id=5, nome=Refrigerante, descricao=Refrigerante, preco=7.00, categoria=bebidas, disponivel=true, restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+📦 Produtos da categoria pizza:
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.categoria,
+        p1_0.descricao,
+        p1_0.disponivel,
+        p1_0.nome,
+        p1_0.preco,
+        p1_0.restaurante_id 
+    from
+        produto p1_0 
+    where
+        p1_0.categoria=?
+Produto(id=1, nome=Pizza Margherita, descricao=Pizza Margherita, preco=40.00, categoria=pizza, disponivel=true, restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+Produto(id=2, nome=Pizza Calabresa, descricao=Pizza Calabresa, preco=45.00, categoria=pizza, disponivel=true, restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+💰 Produtos mais baratos que R$ 50.00:
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.categoria,
+        p1_0.descricao,
+        p1_0.disponivel,
+        p1_0.nome,
+        p1_0.preco,
+        p1_0.restaurante_id 
+    from
+        produto p1_0 
+    where
+        p1_0.preco<=?
+Produto(id=1, nome=Pizza Margherita, descricao=Pizza Margherita, preco=40.00, categoria=pizza, disponivel=true, restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+Produto(id=2, nome=Pizza Calabresa, descricao=Pizza Calabresa, preco=45.00, categoria=pizza, disponivel=true, restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+Produto(id=3, nome=Temaki Salmão, descricao=Temaki Salmão, preco=30.00, categoria=comida japonesa, disponivel=true, restaurante=Restaurante(id=2, nome=Sushi Yama, categoria=restaurante, endereco=Av. Japão, 200, telefone=1144445555, taxaEntrega=6.9, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+Produto(id=5, nome=Refrigerante, descricao=Refrigerante, preco=7.00, categoria=bebidas, disponivel=true, restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null), itensPedido=[])
+📋 Pedidos do cliente João Silva:
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.cliente_id,
+        p1_0.data_criacao,
+        p1_0.data_pedido,
+        p1_0.endereco_entrega,
+        p1_0.numero,
+        p1_0.numero_pedido,
+        p1_0.observacoes,
+        p1_0.restaurante_id,
+        p1_0.status,
+        p1_0.subtotal,
+        p1_0.taxa_entrega,
+        p1_0.valor_total 
+    from
+        pedido p1_0 
+    where
+        p1_0.cliente_id=?
+Pedido(id=1, dataPedido=null, enderecoEntrega=null, subtotal=null, taxaEntrega=null, valorTotal=54.00, observacoes=null, numero=null, numeroPedido=null, dataCriacao=2025-07-22T21:54:05.525301, status=CRIADO, cliente=Cliente(id=1, nome=João Silva, email=joao@email.com, telefone=11999999999, ativo=true, pedidos=null), restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null))
+📋 Pedidos com status CRIADO:
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.cliente_id,
+        p1_0.data_criacao,
+        p1_0.data_pedido,
+        p1_0.endereco_entrega,
+        p1_0.numero,
+        p1_0.numero_pedido,
+        p1_0.observacoes,
+        p1_0.restaurante_id,
+        p1_0.status,
+        p1_0.subtotal,
+        p1_0.taxa_entrega,
+        p1_0.valor_total 
+    from
+        pedido p1_0 
+    where
+        p1_0.status=?
+Pedido(id=1, dataPedido=null, enderecoEntrega=null, subtotal=null, taxaEntrega=null, valorTotal=54.00, observacoes=null, numero=null, numeroPedido=null, dataCriacao=2025-07-22T21:54:05.525301, status=CRIADO, cliente=Cliente(id=1, nome=João Silva, email=joao@email.com, telefone=11999999999, ativo=true, pedidos=null), restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null))
+Pedido(id=2, dataPedido=null, enderecoEntrega=null, subtotal=null, taxaEntrega=null, valorTotal=60.00, observacoes=null, numero=null, numeroPedido=null, dataCriacao=2025-07-22T21:54:05.525548, status=CRIADO, cliente=Cliente(id=2, nome=Maria Oliveira, email=maria@email.com, telefone=11988888888, ativo=true, pedidos=null), restaurante=Restaurante(id=2, nome=Sushi Yama, categoria=restaurante, endereco=Av. Japão, 200, telefone=1144445555, taxaEntrega=6.9, ativo=true, produtos=null, pedidos=null, avaliacao=null))
+📋 Últimos 10 pedidos:
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.cliente_id,
+        p1_0.data_criacao,
+        p1_0.data_pedido,
+        p1_0.endereco_entrega,
+        p1_0.numero,
+        p1_0.numero_pedido,
+        p1_0.observacoes,
+        p1_0.restaurante_id,
+        p1_0.status,
+        p1_0.subtotal,
+        p1_0.taxa_entrega,
+        p1_0.valor_total 
+    from
+        pedido p1_0 
+    order by
+        p1_0.data_pedido desc fetch first ? rows only
+Pedido(id=1, dataPedido=null, enderecoEntrega=null, subtotal=null, taxaEntrega=null, valorTotal=54.00, observacoes=null, numero=null, numeroPedido=null, dataCriacao=2025-07-22T21:54:05.525301, status=CRIADO, cliente=Cliente(id=1, nome=João Silva, email=joao@email.com, telefone=11999999999, ativo=true, pedidos=null), restaurante=Restaurante(id=1, nome=Pizzaria Napoli, categoria=Pizzaria, endereco=Rua das Flores, 100, telefone=1133334444, taxaEntrega=4.6, ativo=true, produtos=null, pedidos=null, avaliacao=null))
+Pedido(id=2, dataPedido=null, enderecoEntrega=null, subtotal=null, taxaEntrega=null, valorTotal=60.00, observacoes=null, numero=null, numeroPedido=null, dataCriacao=2025-07-22T21:54:05.525548, status=CRIADO, cliente=Cliente(id=2, nome=Maria Oliveira, email=maria@email.com, telefone=11988888888, ativo=true, pedidos=null), restaurante=Restaurante(id=2, nome=Sushi Yama, categoria=restaurante, endereco=Av. Japão, 200, telefone=1144445555, taxaEntrega=6.9, ativo=true, produtos=null, pedidos=null, avaliacao=null))
+📋 Pedidos no período de 2025-05-23T21:54:05.611434 a 2025-07-22T21:54:05.611446:
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.cliente_id,
+        p1_0.data_criacao,
+        p1_0.data_pedido,
+        p1_0.endereco_entrega,
+        p1_0.numero,
+        p1_0.numero_pedido,
+        p1_0.observacoes,
+        p1_0.restaurante_id,
+        p1_0.status,
+        p1_0.subtotal,
+        p1_0.taxa_entrega,
+        p1_0.valor_total 
+    from
+        pedido p1_0 
+    where
+        p1_0.data_pedido between ? and ?
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/robson/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.6/byte-buddy-agent-1.17.6.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.984 s -- in com.deliverytech.delivery.DeliveryApiApplicationTests
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.047 s
+[INFO] Finished at: 2025-07-22T21:54:06-03:00
+[INFO] ------------------------------------------------------------------------

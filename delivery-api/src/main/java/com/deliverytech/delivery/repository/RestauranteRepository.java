@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface RestauranteRepository extends JpaRepository<Restaurante, Long> {
 
@@ -23,6 +24,9 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, Long> 
     // Query customizada - top 5 restaurantes por nome (ordem alfabética)
     @Query("SELECT r FROM Restaurante r ORDER BY r.nome ASC")
     List<Restaurante> findTop5ByOrderByNomeAsc();
+
+    Optional<Restaurante> findByNome(String nome);
+
 
 
 }

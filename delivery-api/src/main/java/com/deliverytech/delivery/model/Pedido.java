@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Data
+@ToString(exclude = "itens")
 public class Pedido {
 
     @Id

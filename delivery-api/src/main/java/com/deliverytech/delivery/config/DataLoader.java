@@ -3,6 +3,9 @@ package com.deliverytech.delivery.config;
 import com.deliverytech.delivery.enums.StatusPedido;
 import com.deliverytech.delivery.model.*;
 import com.deliverytech.delivery.repository.*;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +32,7 @@ public class DataLoader implements CommandLineRunner {
     }
 
     @Override
+    @Transactional
     public void run(String... args) {
         System.out.println("🔁 Carregando dados de teste...");
 
@@ -78,19 +82,75 @@ public class DataLoader implements CommandLineRunner {
 
         System.out.println("✅ Dados carregados com sucesso.");
     
+     
+        // Exibir clientes ativos
+        System.out.println("🔍 Clientes ativos:");
+        clienteRepository.findByAtivoTrue().forEach(System.out::println);
 
-        clienteRepository.findByEmail("joao@email.com")
-        .ifPresent(c -> System.out.println("Cliente encontrado: " + c.getNome()));
+        //busca cliente pelo email 
+        System.out.println("📧 Buscar cliente por email:");
+        System.out.println(clienteRepository.findByEmail("joao@email.com"));
 
-        produtoRepository.findByRestauranteId(r1.getId())
-            .forEach(p -> System.out.println("Produto do Restaurante: " + p.getNome()));
+        // verifica se o email já está cadastrado
+        System.out.println("📧 Verificar se email já cadastrado:");
+        System.out.println(clienteRepository.existsByEmail("joao@email.com"));
 
-        pedidoRepository.findTop10ByOrderByDataPedidoDesc()
-            .forEach(p -> System.out.println("Pedido recente: " + p.getId()));
+        //restaurantes da mesma categoria
+        System.out.println("🍕 Restaurantes da mesma categoria (Pizzaria):");
+        restauranteRepository.findByCategoria("Pizzaria").forEach(System.out::println);
 
-        restauranteRepository.findByTaxaEntregaLessThanEqual(new BigDecimal("5.00"))
-            .forEach(r -> System.out.println("Restaurante com taxa até R$5,00: " + r.getNome()));
+        //restaurantes ativos
+        System.out.println("🏪 Restaurantes ativos:");
+        restauranteRepository.findByAtivoTrue().forEach(System.out::println);
+
+        //restaurantes com taxa de entrega menor ou igual a 5.00
+        System.out.println("🍽️ Restaurantes com taxa <= 5.00:");
+        restauranteRepository.findByTaxaEntregaLessThanEqual(new BigDecimal("5.00")).forEach(System.out::println);
+
+        //produtos de um restaurante
+        System.out.println("🍣 Produtos do restaurante Sushi Yama:");
+        Restaurante rSushiYama = restauranteRepository.findByNome("Sushi Yama").orElse(null);
+        if (rSushiYama != null) {
+            produtoRepository.findByRestaurante(rSushiYama).forEach(System.out::println);
         }
+
+        //5 primeiros restaurantes em ordem alfabética
+        System.out.println("🔠 5 primeiros restaurantes em ordem alfabética:");
+        restauranteRepository.findTop5ByOrderByNomeAsc().forEach(System.out::println);
+
+        //produtos disponíveis
+        System.out.println("🛒 Produtos disponíveis:");
+        produtoRepository.findByDisponivelTrue().forEach(System.out::println);
+
+        //produtos por categoria
+        System.out.println("📦 Produtos da categoria pizza:");
+        produtoRepository.findByCategoria("pizza").forEach(System.out::println);
+          
+        //produtos mais baratos que um valor
+        System.out.println("💰 Produtos mais baratos que R$ 50.00:");
+        produtoRepository.findByPrecoLessThanEqual(new BigDecimal("50.00"))
+            .forEach(System.out::println);
+
+        //pedidos de um cliente
+        System.out.println("📋 Pedidos do cliente João Silva:");
+        pedidoRepository.findByClienteId(cliente1.getId()).forEach(System.out::println);
+        
+        //pedidos por status
+        System.out.println("📋 Pedidos com status CRIADO:");
+        pedidoRepository.findByStatus(StatusPedido.CRIADO).forEach(System.out::println);
+       
+        //últimos 10 pedidos
+        System.out.println("📋 Últimos 10 pedidos:");
+        pedidoRepository.findTop10ByOrderByDataPedidoDesc().forEach(System.out::println);
+        
+        //pedidos em um período
+        LocalDateTime inicio = LocalDateTime.now().minusDays(60);
+        LocalDateTime fim = LocalDateTime.now();
+        System.out.println("📋 Pedidos no período de " + inicio + " a " + fim + ":");
+        pedidoRepository.findByDataPedidoBetween(inicio, fim).forEach(System.out::println);
+
+    }
+
 }
 
 

@@ -2,11 +2,13 @@ package com.deliverytech.delivery.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 
 @Entity
 @Data
+@ToString(exclude = "pedido")
 public class ItemPedido {
 
     @Id
