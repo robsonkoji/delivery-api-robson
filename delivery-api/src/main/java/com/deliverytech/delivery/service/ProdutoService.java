@@ -1,7 +1,7 @@
 package com.deliverytech.delivery.service;
 
-import com.deliverytech.delivery.entity.Produto;
-import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.model.Produto;
+import com.deliverytech.delivery.model.Restaurante;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import org.springframework.stereotype.Service;
@@ -17,56 +17,48 @@ public class ProdutoService {
 
     private final ProdutoRepository produtoRepository;
     private final RestauranteRepository restauranteRepository;
+
     ProdutoService(ProdutoRepository produtoRepository, RestauranteRepository restauranteRepository) {
         this.produtoRepository = produtoRepository;
         this.restauranteRepository = restauranteRepository;
     }
 
-    /**
-     * Cadastrar novo produto
-     */
     public Produto cadastrar(Produto produto, Long restauranteId) {
         Restaurante restaurante = restauranteRepository.findById(restauranteId)
             .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + restauranteId));
-        if (produto.getPreco() == null || produto.getPreco().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Preço inválido.");
-        }
         validarDadosProduto(produto);
 
         produto.setRestaurante(restaurante);
         produto.setDisponivel(true);
-       
-        produto.setRestaurante(restaurante);
         return produtoRepository.save(produto);
     }
 
-    /**
-     * Buscar por ID
-     */
+
     @Transactional(readOnly = true)
     public Optional<Produto> buscarPorId(Long id) {
         return produtoRepository.findById(id);
     }
 
-    /**
-     * Listar produtos por restaurante
-     */
     @Transactional(readOnly = true)
     public List<Produto> listarPorRestaurante(Long restauranteId) {
-        return produtoRepository.findByRestauranteIdAndDisponivelTrue(restauranteId);
+        return produtoRepository.findByRestauranteId(restauranteId);
     }
 
-    /**
-     * Buscar por categoria
-     */
+    @Transactional(readOnly = true)
+    public List<Produto> listarDisponiveis() {
+        return produtoRepository.findByDisponivelTrue();
+    }
+
     @Transactional(readOnly = true)
     public List<Produto> buscarPorCategoria(String categoria) {
-        return produtoRepository.findByCategoriaAndDisponivelTrue(categoria);
+        return produtoRepository.findByCategoria(categoria);
     }
 
-    /**
-     * Atualizar produto
-     */
+    @Transactional(readOnly = true)
+    public List<Produto> buscarPorPrecoMaximo(BigDecimal precoMax) {
+        return produtoRepository.findByPrecoLessThanEqual(precoMax);
+    }
+
     public Produto atualizar(Long id, Produto produtoAtualizado) {
         Produto produto = buscarPorId(id)
             .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
@@ -81,9 +73,6 @@ public class ProdutoService {
         return produtoRepository.save(produto);
     }
 
-    /**
-     * Alterar disponibilidade
-     */
     public void alterarDisponibilidade(Long id, boolean disponivel) {
         Produto produto = buscarPorId(id)
             .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
@@ -92,19 +81,10 @@ public class ProdutoService {
         produtoRepository.save(produto);
     }
 
-    /**
-     * Buscar por faixa de preço
-     */
-    @Transactional(readOnly = true)
-    public List<Produto> buscarPorFaixaPreco(BigDecimal precoMin, BigDecimal precoMax) {
-        return produtoRepository.findByPrecoBetweenAndDisponivelTrue(precoMin, precoMax);
-    }
-
     private void validarDadosProduto(Produto produto) {
         if (produto.getNome() == null || produto.getNome().trim().isEmpty()) {
             throw new IllegalArgumentException("Nome é obrigatório");
         }
-
         if (produto.getPreco() == null || produto.getPreco().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Preço deve ser maior que zero");
         }

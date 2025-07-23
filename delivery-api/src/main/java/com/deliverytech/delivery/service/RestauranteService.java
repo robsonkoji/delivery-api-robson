@@ -1,6 +1,6 @@
 package com.deliverytech.delivery.service;
 
-import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.model.Restaurante;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,35 +15,20 @@ public class RestauranteService {
 
     private final RestauranteRepository restauranteRepository;
 
-    RestauranteService(RestauranteRepository restauranteRepository) {
+    public RestauranteService(RestauranteRepository restauranteRepository) {
         this.restauranteRepository = restauranteRepository;
     }
 
-    /**
-     * Cadastrar novo restaurante
-     */
-    public Restaurante cadastrar(Restaurante restaurante) {
-        // Validar nome único
-        if (restauranteRepository.findByNome(restaurante.getNome()).isPresent()) {
-            throw new IllegalArgumentException("Restaurante já cadastrado: " + restaurante.getNome());
-        }
-
-        validarDadosRestaurante(restaurante);
-        restaurante.setAtivo(true);
-
-        return restauranteRepository.save(restaurante);
-    }
-
-    /**
-     * Buscar por ID
+    /*
+     * Buscar restaurantes por categoria
      */
     @Transactional(readOnly = true)
-    public Optional<Restaurante> buscarPorId(Long id) {
-        return restauranteRepository.findById(id);
+    public List<Restaurante> buscarPorCategoria(String categoria) {
+        return restauranteRepository.findByCategoria(categoria);
     }
 
     /**
-     * Listar restaurantes ativos
+     * Listar todos os restaurantes ativos
      */
     @Transactional(readOnly = true)
     public List<Restaurante> listarAtivos() {
@@ -51,33 +36,67 @@ public class RestauranteService {
     }
 
     /**
-     * Buscar por categoria
+     * Buscar restaurantes por taxa de entrega menor ou igual
      */
     @Transactional(readOnly = true)
-    public List<Restaurante> buscarPorCategoria(String categoria) {
-        return restauranteRepository.findByCategoriaAndAtivoTrue(categoria);
+    public List<Restaurante> buscarPorTaxaEntregaMenorOuIgual(BigDecimal taxa) {
+        return restauranteRepository.findByTaxaEntregaLessThanEqual(taxa);
     }
 
     /**
-     * Atualizar restaurante
+     * Buscar os 5 primeiros restaurantes por nome (ordem alfabética)
+     */
+    @Transactional(readOnly = true)
+    public List<Restaurante> buscarTop5PorNome() {
+        return restauranteRepository.findTop5ByOrderByNomeAsc();
+    }
+
+
+    /**
+     * Cadastrar novo restaurante
+     */
+    public Restaurante cadastrar(Restaurante restaurante) {
+        validarDadosRestaurante(restaurante);
+        restaurante.setAtivo(true);
+        return restauranteRepository.save(restaurante);
+    }
+
+    /**
+     * Buscar restaurante por ID
+     */
+    @Transactional(readOnly = true)
+    public Optional<Restaurante> buscarPorId(Long id) {
+        return restauranteRepository.findById(id);
+    }
+
+    /**
+     * Atualizar dados do restaurante
      */
     public Restaurante atualizar(Long id, Restaurante restauranteAtualizado) {
         Restaurante restaurante = buscarPorId(id)
-            .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + id));
+            .orElseThrow(() -> notFoundRestaurante(id));
 
-        // Verificar nome único (se mudou)
-        if (!restaurante.getNome().equals(restauranteAtualizado.getNome()) &&
-            restauranteRepository.findByNome(restauranteAtualizado.getNome()).isPresent()) {
-            throw new IllegalArgumentException("Nome já cadastrado: " + restauranteAtualizado.getNome());
-        }
+        validarDadosRestaurante(restauranteAtualizado);
 
         restaurante.setNome(restauranteAtualizado.getNome());
-        restaurante.setCategoria(restauranteAtualizado.getCategoria());
         restaurante.setEndereco(restauranteAtualizado.getEndereco());
         restaurante.setTelefone(restauranteAtualizado.getTelefone());
-        restaurante.setTaxaEntrega(restauranteAtualizado.getTaxaEntrega());
 
         return restauranteRepository.save(restaurante);
+    }
+
+    private IllegalArgumentException notFoundRestaurante(Long id) {
+        return new IllegalArgumentException("Restaurante não encontrado: " + id);
+    }
+
+    /**
+     * Ativar restaurante
+     */
+    public void ativar(Long id) {
+        Restaurante restaurante = buscarPorId(id)
+            .orElseThrow(() -> notFoundRestaurante(id));
+        restaurante.setAtivo(true);
+        restauranteRepository.save(restaurante);
     }
 
     /**
@@ -85,37 +104,17 @@ public class RestauranteService {
      */
     public void inativar(Long id) {
         Restaurante restaurante = buscarPorId(id)
-            .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado: " + id));
-        if (!restaurante.isAtivo()) {
-            throw new IllegalStateException("Restaurante já está inativo.");
-        }
-
-        restaurante.inativar();
-        restauranteRepository.save(restaurante);
-    }
-
-    /*
-     *  Reativar restaurante
-     */
-    public void reativar(Long id) {
-        Restaurante restaurante = buscarPorId(id)
-            .orElseThrow(() -> new IllegalArgumentException("Restaurante não encontrado" + id));
-
-        if (restaurante.isAtivo()) {
-            throw new IllegalArgumentException("Restaurante já esta ativo");
-        }  
-        restaurante.setAtivo(true);
+            .orElseThrow(() -> notFoundRestaurante(id));
+        restaurante.setAtivo(false);
         restauranteRepository.save(restaurante);
     }
 
     private void validarDadosRestaurante(Restaurante restaurante) {
         if (restaurante.getNome() == null || restaurante.getNome().trim().isEmpty()) {
-            throw new IllegalArgumentException("Nome é obrigatório");
+            throw new IllegalArgumentException("Nome do restaurante é obrigatório");
         }
-
-        if (restaurante.getTaxaEntrega() != null &&
-            restaurante.getTaxaEntrega().compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Taxa de entrega não pode ser negativa");
+        if (restaurante.getEndereco() == null || restaurante.getEndereco().trim().isEmpty()) {
+            throw new IllegalArgumentException("Endereço é obrigatório");
         }
     }
 }

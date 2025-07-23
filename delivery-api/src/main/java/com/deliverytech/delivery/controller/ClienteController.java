@@ -1,22 +1,24 @@
 package com.deliverytech.delivery.controller;
 
-import com.deliverytech.delivery.entity.Cliente;
+import com.deliverytech.delivery.model.Cliente;
 import com.deliverytech.delivery.service.ClienteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Optional;
 
 
 @RestController
-@RequestMapping("/clientes")
+@RequestMapping("/api/clientes")
 @CrossOrigin(origins = "*")
 public class ClienteController {
 
     private static final String PREFIXO_ERRO = "Erro: ";
+    private static final String ERRO_INTERNAL = "Error interno do servidor";
 
     private final ClienteService clienteService;
     
@@ -35,17 +37,75 @@ public class ClienteController {
             return ResponseEntity.badRequest().body(PREFIXO_ERRO + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error interno do servidor");
+                .body(ERRO_INTERNAL);
         }
     }
+ 
+
     /**
      * Listar todos os clientes ativos
      */
     @GetMapping
-    public ResponseEntity<List<Cliente>> listar() {
-        List<Cliente> clientes = clienteService.listarAtivos();
-        return ResponseEntity.ok(clientes);
+    public ResponseEntity<Object> listarAtivos() {
+        try {
+            return ResponseEntity.ok(clienteService.listarAtivos());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ERRO_INTERNAL);
+        }
     }
+
+    /*
+     * Buscar cliente por email
+     */
+    @GetMapping("/email/{email}")
+    public ResponseEntity<Object> buscarPorEmail(@PathVariable String email) {
+        try {
+            Optional<Cliente> cliente = clienteService.buscarPorEmail(email);
+            if (cliente.isPresent()) {
+                return ResponseEntity.ok(cliente.get());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(PREFIXO_ERRO + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ERRO_INTERNAL);
+        }
+    }
+
+    /*
+     * busca por nome parcial
+     */
+    @GetMapping("/nome/{nome}")
+    public ResponseEntity<Object> buscarPorNome(@PathVariable String nome) {
+        try {
+            List<Cliente> clientes = clienteService.buscarPorNome(nome);
+            if (clientes.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(PREFIXO_ERRO + "Nenhum cliente encontrado com o nome: " + nome);
+            }
+            return ResponseEntity.ok(clientes);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ERRO_INTERNAL);
+        }
+    }   
+
+    /*
+     * verifica se o email já está cadastrado
+     */
+    @GetMapping("/email/cadastrado/{email}")
+    public ResponseEntity<Object> emailJaCadastrado(@PathVariable String email) {
+        try {
+            boolean cadastrado = clienteService.emailJaCadastrado(email);
+            return ResponseEntity.ok(cadastrado);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ERRO_INTERNAL);
+        }
+    }
+
     /**
      * Buscar cliente por ID
      */
@@ -72,7 +132,7 @@ public class ClienteController {
             return ResponseEntity.badRequest().body(PREFIXO_ERRO + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error interno do servidor");
+                .body(ERRO_INTERNAL);
         }
     }
     /**
@@ -87,7 +147,7 @@ public class ClienteController {
             return ResponseEntity.badRequest().body(PREFIXO_ERRO + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Erro interno do servidor");
+                .body(ERRO_INTERNAL);
         }
     }
     /**
@@ -102,29 +162,9 @@ public class ClienteController {
             return ResponseEntity.badRequest().body(PREFIXO_ERRO + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Erro interno do servidor");
+                .body(ERRO_INTERNAL);
         }
         
     }
-    /**
-     * Buscar clientes por nome
-     */
-    @GetMapping("/buscar")
-    public ResponseEntity<List<Cliente>> buscarPorNome(@RequestParam String nome) {
-        List<Cliente> clientes = clienteService.buscarPorNome(nome);
-        return ResponseEntity.ok(clientes);
-    }
-    /**
-     * Buscar cliente por email
-     */
-    @GetMapping("/email/{email}")
-    public ResponseEntity<Object> buscarPorEmail(@PathVariable String email) {
-        Optional<Cliente> cliente = clienteService.buscarPorEmail(email);
 
-        if (cliente.isPresent()) {
-            return ResponseEntity.ok(cliente.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
 }
