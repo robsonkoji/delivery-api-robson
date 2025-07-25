@@ -1,15 +1,15 @@
-package com.deliverytech.delivery.model;
+package com.deliverytech.delivery.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
+
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@Getter
+
 @Entity
 @Data
 public class Restaurante {
@@ -31,20 +31,13 @@ public class Restaurante {
     this.ativo = true;
     }
 
-    public Restaurante() {
+    public BigDecimal getTaxaEntrega() {
+    return taxaEntrega;
     }
 
-    public Restaurante(Long id, String nome, String categoria, String endereco, String telefone, BigDecimal taxaEntrega, boolean ativo) {
-        this.id = id;
-        this.nome = nome;
-        this.categoria = categoria;
-        this.endereco = endereco;
-        this.telefone = telefone;
+    public void setTaxaEntrega(BigDecimal taxaEntrega) {
         this.taxaEntrega = taxaEntrega;
-        this.ativo = ativo;
-        }
-
-
+    }
 
     @OneToMany(mappedBy = "restaurante")
     @JsonIgnore
