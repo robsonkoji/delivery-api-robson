@@ -3,12 +3,11 @@ package com.deliverytech.delivery.enums;
 
 
 public enum StatusPedido {
-    CRIADO,
-    PENDENTE,
-    CONFIRMADO,
+    RECEBIDO,
     PREPARANDO,
-    SAIU_PARA_ENTREGA,
+    A_CAMINHO,
     ENTREGUE,
     CANCELADO
+
 }
  

@@ -1,21 +1,25 @@
 package com.deliverytech.delivery.repository;
 
-import com.deliverytech.delivery.model.Cliente;
+import com.deliverytech.delivery.entity.Cliente;
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 import java.util.Optional;
 
+
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
 
-    //busca cliente pelo email
-    Optional<Cliente> findByEmail(String email);
-    
-    //lista clientes ativos
-    List<Cliente> findByAtivoTrue();
-
-    //busca por nome parcial
-    List<Cliente> findByNomeContainingIgnoreCase(String nome);
-
-    //verifica se o email já está cadastrado
     boolean existsByEmail(String email);
+    Optional<Cliente> findByEmail(String email);
+    List<Cliente> findByAtivoTrue();
+    List<Cliente> findByNomeContainingIgnoreCaseAndAtivoTrue(String nome);
+    List<Cliente> findByTelefoneContainingIgnoreCaseAndAtivoTrue(String telefone);
+    List<Cliente> findByEnderecoContainingIgnoreCaseAndAtivoTrue(String endereco);
+    Optional<Cliente> findByIdAndAtivoTrue(Long id);
+    Optional<Cliente> findByEmailAndAtivoTrue(String email);
+    Optional<Cliente> findByIdAndAtivoFalse(Long id);
+    Optional<Cliente> findByEmailAndAtivoFalse(String email);
+    List<Cliente> findByTelefoneContainingAndAtivoTrue(String telefone);
+    List<Cliente> findByEnderecoContainingAndAtivoTrue(String endereco);
+
 }
