@@ -29,4 +29,6 @@ public class Cliente {
     public void reativar() {
     this.ativo = true;
     }
+
+    
 }

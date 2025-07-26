@@ -27,5 +27,9 @@ public class ClienteRequest {
     @NotBlank(message = "Endereço é obrigatório")
     private String endereco;
 
+    public String getEmail() {
+        return email != null ? email.toLowerCase() : null;
+    }
+
 }
 

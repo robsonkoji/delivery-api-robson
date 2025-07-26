@@ -22,6 +22,7 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public Cliente cadastrarCliente(ClienteRequest request) {
+
         if (clienteRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException("Cliente com email já cadastrado");
             
@@ -40,6 +41,7 @@ public class ClienteServiceImpl implements ClienteService {
     public Cliente buscarClientePorId(Long id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com ID: " + id));
+        
     }
 
     @Override
@@ -51,6 +53,12 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public Cliente atualizarCliente(Long id, ClienteRequest request) {
         Cliente cliente = buscarClientePorId(id);
+
+        //Verifica se o email já está cadastrado por outro cliente
+        if (clienteRepository.existsByEmail(request.getEmail()) &&
+            !cliente.getEmail().equals(request.getEmail())) {
+            throw new BusinessException("Cliente com email já cadastrado");
+        }
         cliente.setNome(request.getNome());
         cliente.setEmail(request.getEmail());
         cliente.setTelefone(request.getTelefone());
@@ -73,4 +81,35 @@ public class ClienteServiceImpl implements ClienteService {
     public List<Cliente> listarClientesAtivos() {
         return clienteRepository.findByAtivoTrue();
     }
+
+    @Override
+    public List<Cliente> buscarClientesPorNome(String nome) {
+        return clienteRepository.findByNomeContainingIgnoreCaseAndAtivoTrue(nome);  
+    }
+
+    @Override
+    public List<Cliente> buscarClientesPorTelefone(String telefone) {
+        return clienteRepository.findByTelefoneContainingAndAtivoTrue(telefone);
+    }
+
+    @Override
+    public List<Cliente> buscarClientesPorEndereco(String endereco) {
+        return clienteRepository.findByEnderecoContainingIgnoreCaseAndAtivoTrue(endereco);
+    }
+
+    @Override
+    public Cliente inativarCliente(Long id) {
+        Cliente cliente = buscarClientePorId(id);
+        cliente.inativar();
+        return clienteRepository.save(cliente);
+    }
+
+    @Override
+    public Cliente ativarCliente(Long id) {
+        Cliente cliente = buscarClientePorId(id);
+        cliente.reativar();
+        return clienteRepository.save(cliente);
+    }
+
+
 }

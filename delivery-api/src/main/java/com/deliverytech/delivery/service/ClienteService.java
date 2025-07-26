@@ -18,4 +18,14 @@ public interface ClienteService {
     Cliente ativarDesativarCliente(Long id);
 
     List<Cliente> listarClientesAtivos();
+
+    List<Cliente> buscarClientesPorNome(String nome);
+
+    List<Cliente> buscarClientesPorTelefone(String telefone);
+
+    List<Cliente> buscarClientesPorEndereco(String endereco);
+
+    Cliente inativarCliente(Long id);
+    
+    Cliente ativarCliente(Long id);
 }

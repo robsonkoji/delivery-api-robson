@@ -3,6 +3,9 @@ package com.deliverytech.delivery.controller;
 import com.deliverytech.delivery.dto.request.ClienteRequest;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.service.ClienteService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +15,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/clientes")
+@RequestMapping("/api/clientes")
 @CrossOrigin(origins = "*")
 public class ClienteController {
 
@@ -30,7 +33,7 @@ public class ClienteController {
      * @return ResponseEntity com o cliente cadastrado e status CREATED.
      */
     @PostMapping
-    public ResponseEntity<Cliente> cadastrarCliente(@RequestBody ClienteRequest request) {
+    public ResponseEntity<Cliente> cadastrarCliente(@RequestBody @Valid ClienteRequest request) {
         Cliente cliente = clienteService.cadastrarCliente(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(cliente);
     }
@@ -90,4 +93,67 @@ public class ClienteController {
         return ResponseEntity.ok(ativos);
     }
 
+    /**
+     * Método para buscar todos os clientes.
+     * @return ResponseEntity com a lista de todos os clientes.
+     */
+    @GetMapping
+    public ResponseEntity<List<Cliente>> listarTodos() {
+        List<Cliente> clientes = clienteService.listarClientesAtivos();
+        return ResponseEntity.ok(clientes);
+    }
+
+    /**
+     * Método para buscar clientes por nome.
+     * @param nome Nome do cliente a ser buscado.
+     * @return ResponseEntity com a lista de clientes encontrados.
+     */
+    @GetMapping("/nome")
+    public ResponseEntity<List<Cliente>> buscarPorNome(@RequestParam String nome) {
+        List<Cliente> clientes = clienteService.buscarClientesPorNome(nome);
+        return ResponseEntity.ok(clientes); 
+    }
+
+    /**
+     * Método para buscar clientes por telefone.
+     * @param telefone Telefone do cliente a ser buscado.
+     * @return ResponseEntity com a lista de clientes encontrados.
+     */
+    @GetMapping("/buscar-por-telefone")
+    public ResponseEntity<List<Cliente>> buscarPorTelefone(@RequestParam String telefone) {
+        List<Cliente> clientes = clienteService.buscarClientesPorTelefone(telefone);
+        return ResponseEntity.ok(clientes); 
+    }
+    /**
+     * Método para buscar clientes por endereço.
+     * @param endereco Endereço do cliente a ser buscado.
+     * @return ResponseEntity com a lista de clientes encontrados.
+     */
+    @GetMapping("/buscar-por-endereco")
+    public ResponseEntity<List<Cliente>> buscarPorEndereco(@RequestParam String endereco) {
+        List<Cliente> clientes = clienteService.buscarClientesPorEndereco(endereco);
+        return ResponseEntity.ok(clientes); 
+    }
+
+    /**
+     * Intivar um cliente.
+     * @param id ID do cliente a ser inativado.
+     * @return ResponseEntity com o cliente inativado ou erro 404 se não encontrado.
+     */
+    @PatchMapping("/{id}/inativar")
+    public ResponseEntity<Cliente> inativarCliente(@PathVariable Long id) {
+        Cliente cliente = clienteService.inativarCliente(id);
+        return ResponseEntity.ok(cliente);
+    }   
+    /**
+     * reativar um cliente.
+     * @param id ID do cliente a ser reativado.
+     * @return ResponseEntity com o cliente reativado ou erro 404 se não encontrado.
+     */
+    @PatchMapping("/{id}/reativar")
+    public ResponseEntity<Cliente> reativarCliente(@PathVariable Long id) {
+        Cliente cliente = clienteService.ativarCliente(id);
+        return ResponseEntity.ok(cliente);
+    }
 }
+  
