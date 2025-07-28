@@ -1,16 +1,18 @@
 package com.deliverytech.delivery.controller;
 
 import com.deliverytech.delivery.dto.request.ClienteRequest;
+import com.deliverytech.delivery.dto.response.ClienteResponse;
 import com.deliverytech.delivery.entity.Cliente;
+import com.deliverytech.delivery.mapper.ClienteMapper;
 import com.deliverytech.delivery.service.ClienteService;
 
 import jakarta.validation.Valid;
 
-import org.springframework.http.HttpStatus;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
+import java.net.URI;
 import java.util.List;
 
 
@@ -22,9 +24,11 @@ public class ClienteController {
     
 
     private final ClienteService clienteService;
+    private final ClienteMapper mapper;
     
-    public ClienteController(ClienteService clienteService) {
+    public ClienteController(ClienteService clienteService, ClienteMapper mapper) {
         this.clienteService = clienteService;
+        this.mapper = mapper;
     }
 
     /**
@@ -33,9 +37,10 @@ public class ClienteController {
      * @return ResponseEntity com o cliente cadastrado e status CREATED.
      */
     @PostMapping
-    public ResponseEntity<Cliente> cadastrarCliente(@RequestBody @Valid ClienteRequest request) {
+    public ResponseEntity<ClienteResponse> cadastrarCliente(@Valid @RequestBody ClienteRequest request) {
         Cliente cliente = clienteService.cadastrarCliente(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(cliente);
+        return ResponseEntity.created(URI.create("/api/clientes/" + cliente.getId()))
+                .body(mapper.toResponse(cliente));
     }
 
     /**
@@ -44,9 +49,9 @@ public class ClienteController {
      * @return ResponseEntity com o cliente encontrado ou erro 404 se não encontrado.
      */
    @GetMapping("/{id}")
-    public ResponseEntity<Cliente> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<ClienteResponse> buscarPorId(@PathVariable Long id) {
         Cliente cliente = clienteService.buscarClientePorId(id);
-        return ResponseEntity.ok(cliente);
+        return ResponseEntity.ok(mapper.toResponse(cliente));
     }
 
     /**
@@ -67,9 +72,9 @@ public class ClienteController {
      * @return ResponseEntity com o cliente atualizado ou erro 404 se não encontrado.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> atualizarCliente(@PathVariable Long id, @RequestBody ClienteRequest request) {
+    public ResponseEntity<ClienteResponse> atualizarCliente(@Valid @PathVariable Long id, @RequestBody ClienteRequest request) {
         Cliente clienteAtualizado = clienteService.atualizarCliente(id, request);
-        return ResponseEntity.ok(clienteAtualizado);
+        return ResponseEntity.ok(mapper.toResponse(clienteAtualizado));
     }
 
     /**
@@ -78,9 +83,9 @@ public class ClienteController {
      * @return ResponseEntity com o cliente atualizado ou erro 404 se não encontrado.
      */
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Cliente> alterarStatus(@PathVariable Long id) {
+    public ResponseEntity<ClienteResponse> alterarStatus(@PathVariable Long id) {
         Cliente cliente = clienteService.ativarDesativarCliente(id);
-        return ResponseEntity.ok(cliente);
+        return ResponseEntity.ok(mapper.toResponse(cliente));
     }
 
     /**

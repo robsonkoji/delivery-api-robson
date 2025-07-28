@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.deliverytech.delivery.dto.request.ProdutoRequest;
-import com.deliverytech.delivery.entity.Produto;
+import com.deliverytech.delivery.dto.response.ProdutoResponse;
 import com.deliverytech.delivery.service.ProdutoService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,30 +19,26 @@ public class ProdutoController {
 
        // POST /api/produtos - Cadastrar produto
     @PostMapping("/produtos")
-    public ResponseEntity<Produto> cadastrar(@RequestBody ProdutoRequest request) {
-        Produto produto = produtoService.cadastrarProduto(request);
-        return ResponseEntity.ok(produto);
+    public ResponseEntity<ProdutoResponse> cadastrar(@RequestBody ProdutoRequest request) {
+        return ResponseEntity.ok(produtoService.cadastrarProduto(request));
     }
 
     // GET /api/produtos/{id} - Buscar por ID
     @GetMapping("/produtos/{id}")
-    public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) {
-        Produto produto = produtoService.buscarProdutoPorId(id);
-        return ResponseEntity.ok(produto);
+    public ResponseEntity<ProdutoResponse> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(produtoService.buscarProdutoPorId(id));
     }
 
     // GET /api/restaurantes/{restauranteId}/produtos - Produtos do restaurante
     @GetMapping("/restaurantes/{restauranteId}/produtos")
-    public ResponseEntity<List<Produto>> listarPorRestaurante(@PathVariable Long restauranteId) {
-        List<Produto> produtos = produtoService.buscarProdutosPorRestaurante(restauranteId);
-        return ResponseEntity.ok(produtos);
+    public ResponseEntity<List<ProdutoResponse>> listarPorRestaurante(@PathVariable Long restauranteId) {
+        return ResponseEntity.ok(produtoService.buscarProdutosPorRestaurante(restauranteId));
     }
 
     // PUT /api/produtos/{id} - Atualizar produto
     @PutMapping("/produtos/{id}")
-    public ResponseEntity<Produto> atualizar(@PathVariable Long id, @RequestBody ProdutoRequest request) {
-        Produto produto = produtoService.atualizarProduto(id, request);
-        return ResponseEntity.ok(produto);
+    public ResponseEntity<ProdutoResponse> atualizar(@PathVariable Long id, @RequestBody ProdutoRequest request) {
+        return ResponseEntity.ok(produtoService.atualizarProduto(id, request));
     }
 
     // PATCH /api/produtos/{id}/disponibilidade - Alterar disponibilidade
@@ -54,9 +50,8 @@ public class ProdutoController {
 
     // GET /api/produtos/categoria/{categoria} - Listar produtos por categoria
     @GetMapping("/produtos/categoria/{categoria}")
-    public ResponseEntity<List<Produto>> listarPorCategoria(@PathVariable String categoria) {
-        List<Produto> produtos = produtoService.buscarProdutosPorCategoria(categoria);
-        return ResponseEntity.ok(produtos);
+    public ResponseEntity<List<ProdutoResponse>> listarPorCategoria(@PathVariable String categoria) {
+        return ResponseEntity.ok(produtoService.buscarProdutosPorCategoria(categoria));
 
     }
 }

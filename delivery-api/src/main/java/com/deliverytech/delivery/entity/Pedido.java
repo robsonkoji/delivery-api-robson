@@ -49,4 +49,13 @@ public class Pedido {
             .reduce(BigDecimal.ZERO, BigDecimal::add);
         this.valorTotal = subtotal.add(taxaEntrega != null ? taxaEntrega : BigDecimal.ZERO);
     }
+
+    // Pedido.java (entidade)
+    public BigDecimal getTotal() {
+        BigDecimal subtotalItens = itens.stream()
+                .map(ItemPedido::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return subtotalItens.add(this.taxaEntrega != null ? this.taxaEntrega : BigDecimal.ZERO);
+    }
 }

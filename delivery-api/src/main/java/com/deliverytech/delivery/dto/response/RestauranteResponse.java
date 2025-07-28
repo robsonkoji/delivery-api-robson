@@ -1,6 +1,7 @@
 package com.deliverytech.delivery.dto.response;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import lombok.Data;
 
@@ -14,4 +15,5 @@ public class RestauranteResponse {
     private BigDecimal taxaEntrega;
     private boolean ativo;
     private String telefone;
+    private LocalDateTime dataCriacao;  
 }

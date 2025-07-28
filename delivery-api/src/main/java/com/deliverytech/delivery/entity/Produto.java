@@ -27,7 +27,8 @@ public class Produto {
 
     public Boolean getDisponivel() {
     return disponivel;
-}
+    }
+    
     @ManyToOne
     @JoinColumn(name = "restaurante_id")
     private Restaurante restaurante;
@@ -35,6 +36,13 @@ public class Produto {
     @OneToMany(mappedBy = "produto")
     @JsonIgnore
     private List<ItemPedido> itensPedido;
+
+    public boolean getAtivo() {
+        return this.disponivel;
+    }
+    public void setAtivo(Boolean ativo) {
+        this.disponivel = ativo;
+    }
 
 
 

@@ -11,4 +11,5 @@ public class ClienteResponse {
     private String telefone;
     private String endereco;
     private boolean ativo;
+    private java.time.LocalDateTime dataCriacao;
 }

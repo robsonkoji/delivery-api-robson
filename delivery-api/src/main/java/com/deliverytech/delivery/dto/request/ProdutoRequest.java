@@ -29,4 +29,6 @@ public class ProdutoRequest {
 
     @NotNull(message = "ID do restaurante é obrigatório")
     private Long restauranteId;
+
+    
 }

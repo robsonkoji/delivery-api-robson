@@ -38,12 +38,12 @@ public class RestauranteServiceImpl implements RestauranteService {
     }
 
     @Override
-    public List<Restaurante> buscRestaurantePorCategoria(String categoria) {
+    public List<Restaurante> buscaRestaurantePorCategoria(String categoria) {
         return restauranteRepository.findByCategoriaIgnoreCase(categoria);
     }
 
     @Override
-    public List<Restaurante> buscRestauranteDisponiveis() {
+    public List<Restaurante> buscaRestauranteDisponiveis() {
         return restauranteRepository.findByAtivoTrue();
     }
 

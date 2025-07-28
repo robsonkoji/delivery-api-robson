@@ -5,6 +5,7 @@ import lombok.Data;
 
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -22,6 +23,7 @@ public class Restaurante {
     private String telefone;
     private BigDecimal taxaEntrega;
     private boolean ativo;
+    private LocalDateTime dataCriacao = LocalDateTime.now();
 
     public void inativar() {
     this.ativo = false;
@@ -39,6 +41,7 @@ public class Restaurante {
         this.taxaEntrega = taxaEntrega;
     }
 
+    
     @OneToMany(mappedBy = "restaurante")
     @JsonIgnore
     private List<Produto> produtos;
@@ -49,6 +52,8 @@ public class Restaurante {
 
     @Column(name = "avaliacao")
     private BigDecimal avaliacao;
+
+   
 
 
     

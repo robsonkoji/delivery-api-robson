@@ -30,5 +30,5 @@ public class Cliente {
     this.ativo = true;
     }
 
-    
+    private java.time.LocalDateTime dataCriacao;
 }

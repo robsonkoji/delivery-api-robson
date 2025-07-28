@@ -12,9 +12,9 @@ public interface RestauranteService {
 
     Restaurante buscRestaurantePorId (Long id);
 
-    List<Restaurante> buscRestaurantePorCategoria (String categoria);
+    List<Restaurante> buscaRestaurantePorCategoria (String categoria);
 
-    List<Restaurante> buscRestauranteDisponiveis ();
+    List<Restaurante> buscaRestauranteDisponiveis ();
 
     Restaurante atualizarRestaurante(Long id, RestauranteRequest request);
 
