@@ -43,7 +43,7 @@ public class PedidoServiceImpl implements PedidoService {
         Restaurante restaurante = restauranteRepository.findById(request.getRestauranteId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
 
-        if (!restaurante.isAtivo()) {
+        if (Boolean.FALSE.equals(restaurante.getAtivo())) {
             throw new BusinessException("Restaurante está inativo");
         }
 

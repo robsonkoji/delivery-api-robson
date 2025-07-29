@@ -4,21 +4,19 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
-import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.dto.response.RestauranteResponse;
 
 public interface RestauranteService {
+    
+    RestauranteResponse cadastrarRestaurante(RestauranteRequest request);
 
-    Restaurante cadastrarRestaurante(RestauranteRequest request);
+    RestauranteResponse buscarRestaurantePorId(Long id); // deve estar EXATAMENTE com esse nome e assinatura
 
-    Restaurante buscRestaurantePorId (Long id);
+    RestauranteResponse atualizarRestaurante(Long id, RestauranteRequest request);
 
-    List<Restaurante> buscaRestaurantePorCategoria (String categoria);
+    List<RestauranteResponse> buscarRestaurantesPorCategoria(String categoria);
 
-    List<Restaurante> buscaRestauranteDisponiveis ();
+    List<RestauranteResponse> buscarRestaurantesDisponiveis();
 
-    Restaurante atualizarRestaurante(Long id, RestauranteRequest request);
-
-    BigDecimal calcularTaxaEntrega (Long restauranteId, String cep);
+    BigDecimal calcularTaxaEntrega(Long restauranteId, String cep);
 }
-    
-    

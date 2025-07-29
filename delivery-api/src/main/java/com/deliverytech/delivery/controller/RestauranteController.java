@@ -2,9 +2,9 @@ package com.deliverytech.delivery.controller;
 
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
 import com.deliverytech.delivery.dto.response.RestauranteResponse;
-import com.deliverytech.delivery.entity.Restaurante;
-import com.deliverytech.delivery.mapper.RestauranteMapper;
 import com.deliverytech.delivery.service.RestauranteService;
+
+import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,48 +20,46 @@ import java.util.List;
 public class RestauranteController {
 
     private final RestauranteService restauranteService;
-    private final RestauranteMapper mapper;
 
-    public RestauranteController(RestauranteService restauranteService, RestauranteMapper mapper) {
+    public RestauranteController(RestauranteService restauranteService) {
         this.restauranteService = restauranteService;
-        this.mapper = mapper;
     }
    
     // POST /api/restaurantes - Cadastrar restaurante
     @PostMapping
-    public ResponseEntity<RestauranteResponse> cadastrar(@RequestBody RestauranteRequest request) {
-        Restaurante restaurante = restauranteService.cadastrarRestaurante(request);
+    public ResponseEntity<RestauranteResponse> cadastrar(@Valid @RequestBody RestauranteRequest request) {
+        RestauranteResponse restaurante = restauranteService.cadastrarRestaurante(request);
         return ResponseEntity.created(URI.create("/api/restaurantes/" + restaurante.getId()))
-            .body(mapper.toResponse(restaurante));
+            .body(restaurante);
     }
 
     // GET /api/restaurantes/{id} - Buscar por ID
     @GetMapping("/{id}")
         public ResponseEntity<RestauranteResponse> buscarPorId(@PathVariable Long id) {
-        Restaurante restaurante = restauranteService.buscRestaurantePorId(id);
-        return ResponseEntity.ok(mapper.toResponse(restaurante));
+        RestauranteResponse restaurante = restauranteService.buscarRestaurantePorId(id);
+        return ResponseEntity.ok(restaurante);
     }
 
     // GET /api/restaurantes - Listar disponíveis (com paginação e filtros opcionais)
     @GetMapping
-    public ResponseEntity<List<Restaurante>> listarDisponiveis(@RequestBody RestauranteRequest request) {
-        List<Restaurante> restaurantes = restauranteService.buscaRestauranteDisponiveis();
+    public ResponseEntity<List<RestauranteResponse>> listarDisponiveis(@RequestBody RestauranteRequest request) {
+        List<RestauranteResponse> restaurantes = restauranteService.buscarRestaurantesDisponiveis();
         return ResponseEntity.ok(restaurantes);
         
     }
 
     // GET /api/restaurantes/categoria/{categoria} - Listar por categoria
     @GetMapping("/categoria/{categoria}")
-    public ResponseEntity<List<Restaurante>> listarPorCategoria(@PathVariable String categoria) {
-        List<Restaurante> restaurantes = restauranteService.buscaRestaurantePorCategoria(categoria);
+    public ResponseEntity<List<RestauranteResponse>> listarPorCategoria(@PathVariable String categoria) {
+        List<RestauranteResponse> restaurantes = restauranteService.buscarRestaurantesPorCategoria(categoria);
         return ResponseEntity.ok(restaurantes);
     }
 
     // PUT /api/restaurantes/{id} - Atualizar restaurante
     @PutMapping("/{id}")
     public ResponseEntity<RestauranteResponse> atualizar(@PathVariable Long id, @RequestBody RestauranteRequest request) {
-        Restaurante restauranteAtualizado = restauranteService.atualizarRestaurante(id, request);
-        return ResponseEntity.ok(mapper.toResponse(restauranteAtualizado));
+        RestauranteResponse restauranteAtualizado = restauranteService.atualizarRestaurante(id, request);
+        return ResponseEntity.ok(restauranteAtualizado);
     }
 
     // GET /api/restaurantes/{id}/taxa-entrega/{cep} - Calcular taxa de entrega

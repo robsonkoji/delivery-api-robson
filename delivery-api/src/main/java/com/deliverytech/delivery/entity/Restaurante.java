@@ -1,8 +1,11 @@
 package com.deliverytech.delivery.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,6 +16,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+
 public class Restaurante {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,9 +29,14 @@ public class Restaurante {
     private String categoria;
     private String endereco;
     private String telefone;
-    private BigDecimal taxaEntrega;
-    private boolean ativo;
     private LocalDateTime dataCriacao = LocalDateTime.now();
+
+
+    @Column(nullable = false)
+    private Boolean ativo;
+
+    @Column(name = "taxa_entrega")
+    private BigDecimal taxaEntrega;
 
     public void inativar() {
     this.ativo = false;
