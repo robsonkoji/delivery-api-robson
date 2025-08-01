@@ -51,7 +51,7 @@ class RestauranteControllerIT {
         Restaurante r2 = new Restaurante();
         r2.setNome("Pizza Bella");
         r2.setCategoria("Italiana");
-        r2.setEndereco("Av.Japonesa,123 - 00000-0000");
+        r2.setEndereco("Av.Italiana,123 - 00000-0000");
         r2.setTelefone("1190000-0000");
         r2.setTaxaEntrega(BigDecimal.valueOf(5.00));
         r2.setAtivo(true);
@@ -59,7 +59,7 @@ class RestauranteControllerIT {
         Restaurante r3 = new Restaurante();
         r3.setNome("Burger King");
         r3.setCategoria("Fast Food");
-        r3.setEndereco("Av.Japonesa,123 - 00000-0000");
+        r3.setEndereco("Av.Fast,123 - 00000-0000");
         r3.setTelefone("1190000-0000");
         r3.setTaxaEntrega(BigDecimal.valueOf(7.00));
         r3.setAtivo(false);
@@ -67,6 +67,7 @@ class RestauranteControllerIT {
         restauranteRepository.saveAll(List.of(r1, r2, r3));
     }
 
+    // ✅ Criação bem-sucedida - Status 201
     @Test
     void deveCadastrarRestauranteComSucesso() throws Exception {
         RestauranteRequest request = new RestauranteRequest();
@@ -85,6 +86,7 @@ class RestauranteControllerIT {
             .andExpect(jsonPath("$.dados.categoria").value("Brasileira"));
     }
 
+    // ✅ Busca existente - Status 200
     @Test
     void deveBuscarRestaurantePorId() throws Exception {
         Restaurante restaurante = restauranteRepository.findAll().get(0);
@@ -94,6 +96,56 @@ class RestauranteControllerIT {
             .andExpect(jsonPath("$.dados.nome").value(restaurante.getNome()));
     }
 
+    // ✅ Busca inexistente - Status 404
+    @Test
+    void deveRetornar404QuandoBuscarRestauranteInexistente() throws Exception {
+        mockMvc.perform(get("/api/restaurantes/{id}", 9999L))
+            .andExpect(status().isNotFound());
+    }
+
+    // ✅ Dados inválidos - Status 400
+    @Test
+    void deveRetornar400QuandoDadosInvalidos() throws Exception {
+        RestauranteRequest request = new RestauranteRequest(); // campos nulos
+
+        mockMvc.perform(post("/api/restaurantes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+    }
+
+    // ✅ Conflito de dados - Status 409 (nome duplicado)
+    @Test
+    void deveRetornar409QuandoNomeDuplicado() throws Exception {
+        Restaurante restauranteExistente = restauranteRepository.findAll().get(0);
+
+        RestauranteRequest request = new RestauranteRequest();
+        request.setNome(restauranteExistente.getNome()); // mesmo nome
+        request.setCategoria("Categoria");
+        request.setEndereco("Endereco");
+        request.setTelefone("1199999-9999");
+        request.setTaxaEntrega(BigDecimal.valueOf(5.0));
+        request.setAtivo(true);
+
+        mockMvc.perform(post("/api/restaurantes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isConflict());
+    }
+
+    // ✅ Paginação - Metadados corretos
+    @Test
+    void deveRetornarRestaurantesPaginados() throws Exception {
+        mockMvc.perform(get("/api/restaurantes")
+                .param("page", "0")
+                .param("size", "2"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.metadados.totalPaginas").exists())
+            .andExpect(jsonPath("$.metadados.totalElementos").value(3))
+            .andExpect(jsonPath("$.dados.length()").value(2));
+    }
+
+    // ✅ Listagem com filtros
     @Test
     void deveListarRestaurantesComFiltros() throws Exception {
         mockMvc.perform(get("/api/restaurantes")
@@ -105,6 +157,7 @@ class RestauranteControllerIT {
             .andExpect(jsonPath("$.dados[0].ativo").value(true));
     }
 
+    // ✅ Atualização
     @Test
     void deveAtualizarRestaurante() throws Exception {
         Restaurante restaurante = restauranteRepository.findAll().get(0);
@@ -125,6 +178,7 @@ class RestauranteControllerIT {
             .andExpect(jsonPath("$.dados.taxaEntrega").value(12.00));
     }
 
+    // ✅ Alteração de status (PATCH)
     @Test
     void deveAlterarStatusRestaurante() throws Exception {
         Restaurante restaurante = restauranteRepository.findAll().get(0);
@@ -135,6 +189,7 @@ class RestauranteControllerIT {
             .andExpect(jsonPath("$.dados.ativo").value(!statusInicial));
     }
 
+    // ✅ Cálculo de taxa
     @Test
     void deveCalcularTaxaEntrega() throws Exception {
         Restaurante restaurante = restauranteRepository.findAll().get(0);
@@ -144,6 +199,7 @@ class RestauranteControllerIT {
             .andExpect(jsonPath("$.dados").value(restaurante.getTaxaEntrega().doubleValue()));
     }
 
+    // ✅ Restaurantes próximos (simulado)
     @Test
     void deveListarRestaurantesProximos() throws Exception {
         mockMvc.perform(get("/api/restaurantes/proximos/{cep}", "01310930"))

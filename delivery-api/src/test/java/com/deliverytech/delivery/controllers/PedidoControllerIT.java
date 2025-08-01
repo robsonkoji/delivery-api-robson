@@ -113,6 +113,12 @@ class PedidoControllerIT {
     }
 
     @Test
+    void deveRetornar404ParaPedidoInexistente() throws Exception {
+        mockMvc.perform(get("/api/pedidos/99999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void deveBuscarPedidoPorId() throws Exception {
         Pedido pedido = new Pedido();
         pedido.setCliente(cliente);
@@ -167,6 +173,27 @@ class PedidoControllerIT {
                 .param("dataInicio", dataInicio)
                 .param("dataFim", dataFim))
             .andExpect(status().isOk());
+    }
+
+    @Test
+    void deveRetornar409ParaConflitoDeDados() throws Exception {
+        PedidoRequest request = new PedidoRequest();
+        request.setClienteId(cliente.getId());
+        request.setRestauranteId(restaurante.getId());
+        request.setEnderecoEntrega("Rua das Flores");
+        request.setItens(List.of(new ItemPedidoRequest(produto1.getId(), 1)));
+
+        // Primeiro pedido
+        mockMvc.perform(post("/api/pedidos")
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        // Segundo pedido idêntico (simulação de duplicação lógica)
+        mockMvc.perform(post("/api/pedidos")
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict());
     }
 
 
@@ -227,5 +254,29 @@ class PedidoControllerIT {
 
         mockMvc.perform(delete("/api/pedidos/" + pedido.getId()))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deveRetornarPedidosPaginadosComMetadados() throws Exception {
+        for (int i = 0; i < 5; i++) {
+            Pedido pedido = new Pedido();
+            pedido.setCliente(cliente);
+            pedido.setRestaurante(restaurante);
+            pedido.setEnderecoEntrega("Rua " + i);
+            pedido.setStatus(StatusPedido.CRIADO);
+            pedido.setDataPedido(LocalDateTime.now());
+            pedido.setTaxaEntrega(BigDecimal.valueOf(5.0));
+            pedido.setValorTotal(BigDecimal.valueOf(20.0 + i));
+            pedidoRepository.save(pedido);
+        }
+
+        mockMvc.perform(get("/api/pedidos")
+                        .param("page", "0")
+                        .param("size", "3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pagina.totalPaginas").exists())
+                .andExpect(jsonPath("$.pagina.totalElementos").value(5))
+                .andExpect(jsonPath("$.pagina.tamanhoPagina").value(3))
+                .andExpect(jsonPath("$.pagina.paginaAtual").value(0));
     }
 }
