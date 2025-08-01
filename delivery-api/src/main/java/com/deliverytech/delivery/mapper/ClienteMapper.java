@@ -24,6 +24,7 @@ public class ClienteMapper {
         response.setEmail(cliente.getEmail());
         response.setTelefone(cliente.getTelefone());
         response.setEndereco(cliente.getEndereco());
+        response.setAtivo(cliente.isAtivo());
         response.setDataCriacao(cliente.getDataCriacao());
         return response;
     }

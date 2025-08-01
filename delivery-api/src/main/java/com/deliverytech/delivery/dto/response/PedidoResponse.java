@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class PedidoResponse {
     private Long id;
-    private Long clienteId;
+    private ClienteResponse cliente;
     private Long restauranteId;
     private String enderecoEntrega;
     private String observacoes;

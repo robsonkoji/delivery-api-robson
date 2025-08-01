@@ -28,4 +28,6 @@ public interface ClienteService {
     Cliente inativarCliente(Long id);
     
     Cliente ativarCliente(Long id);
+
+    List<Cliente> listarTodosClientes();
 }

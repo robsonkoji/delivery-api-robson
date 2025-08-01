@@ -3,6 +3,8 @@ package com.deliverytech.delivery.dto.response;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Data;
 
 
@@ -15,5 +17,7 @@ public class RestauranteResponse {
     private BigDecimal taxaEntrega;
     private boolean ativo;
     private String telefone;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm")
     private LocalDateTime dataCriacao;  
 }

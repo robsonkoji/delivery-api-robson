@@ -30,9 +30,6 @@ public class Restaurante {
     private String endereco;
     private String telefone;
     private LocalDateTime dataCriacao = LocalDateTime.now();
-
-
-    @Column(nullable = false)
     private Boolean ativo;
 
     @Column(name = "taxa_entrega")
@@ -65,6 +62,8 @@ public class Restaurante {
 
     @Column(name = "avaliacao")
     private BigDecimal avaliacao;
+
+  
 
    
 

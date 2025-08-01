@@ -1,5 +1,9 @@
 package com.deliverytech.delivery.dto.response;
 
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import lombok.Data;
 
 @Data
@@ -11,5 +15,7 @@ public class ClienteResponse {
     private String telefone;
     private String endereco;
     private boolean ativo;
-    private java.time.LocalDateTime dataCriacao;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm")
+    private LocalDateTime dataCriacao;
 }

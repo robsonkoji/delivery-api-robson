@@ -19,4 +19,12 @@ public interface RestauranteService {
     List<RestauranteResponse> buscarRestaurantesDisponiveis();
 
     BigDecimal calcularTaxaEntrega(Long restauranteId, String cep);
+
+    List<RestauranteResponse> buscarRestaurantesComFiltros(String categoria, Boolean ativo);
+
+    RestauranteResponse alterarStatusRestaurante(Long id);
+
+    List<RestauranteResponse> buscarRestaurantesProximos(String cep);
+
+
 }

@@ -22,11 +22,10 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Override
     public Cliente cadastrarCliente(ClienteRequest request) {
-
         if (clienteRepository.existsByEmail(request.getEmail())) {
             throw new BusinessException("Cliente com email já cadastrado");
-            
         }
+
         Cliente cliente = new Cliente();
         cliente.setNome(request.getNome());
         cliente.setEmail(request.getEmail());
@@ -41,7 +40,6 @@ public class ClienteServiceImpl implements ClienteService {
     public Cliente buscarClientePorId(Long id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com ID: " + id));
-        
     }
 
     @Override
@@ -54,15 +52,16 @@ public class ClienteServiceImpl implements ClienteService {
     public Cliente atualizarCliente(Long id, ClienteRequest request) {
         Cliente cliente = buscarClientePorId(id);
 
-        //Verifica se o email já está cadastrado por outro cliente
         if (clienteRepository.existsByEmail(request.getEmail()) &&
             !cliente.getEmail().equals(request.getEmail())) {
             throw new BusinessException("Cliente com email já cadastrado");
         }
+
         cliente.setNome(request.getNome());
         cliente.setEmail(request.getEmail());
         cliente.setTelefone(request.getTelefone());
         cliente.setEndereco(request.getEndereco());
+
         return clienteRepository.save(cliente);
     }
 
@@ -111,5 +110,8 @@ public class ClienteServiceImpl implements ClienteService {
         return clienteRepository.save(cliente);
     }
 
-
+    @Override
+    public List<Cliente> listarTodosClientes() {
+        return clienteRepository.findAll();
+    }
 }

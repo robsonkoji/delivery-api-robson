@@ -2,12 +2,13 @@ package com.deliverytech.delivery.controller;
 
 import com.deliverytech.delivery.dto.request.ClienteRequest;
 import com.deliverytech.delivery.dto.response.ClienteResponse;
+import com.deliverytech.delivery.dto.response.common.ApiWrapperResponse;
+import com.deliverytech.delivery.dto.response.common.UtilsResponse;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.mapper.ClienteMapper;
 import com.deliverytech.delivery.service.ClienteService;
 
 import jakarta.validation.Valid;
-
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,150 +16,154 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/clientes")
 @CrossOrigin(origins = "*")
+@Tag(name = "Clientes", description = "Operações relacionadas a clientes")
 public class ClienteController {
-
-    
 
     private final ClienteService clienteService;
     private final ClienteMapper mapper;
-    
+
     public ClienteController(ClienteService clienteService, ClienteMapper mapper) {
         this.clienteService = clienteService;
         this.mapper = mapper;
     }
 
-    /**
-     * Método para cadastrar um novo cliente.
-     * @param cliente Cliente a ser cadastrado.
-     * @return ResponseEntity com o cliente cadastrado e status CREATED.
-     */
     @PostMapping
-    public ResponseEntity<ClienteResponse> cadastrarCliente(@Valid @RequestBody ClienteRequest request) {
+    @Operation(summary = "Cadastrar um novo cliente")
+    @ApiResponse(responseCode = "201", description = "Cliente cadastrado com sucesso",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content)
+    public ResponseEntity<ApiWrapperResponse<ClienteResponse>> cadastrarCliente(
+            @Valid @RequestBody ClienteRequest request) {
         Cliente cliente = clienteService.cadastrarCliente(request);
+        ClienteResponse response = mapper.toResponse(cliente);
         return ResponseEntity.created(URI.create("/api/clientes/" + cliente.getId()))
-                .body(mapper.toResponse(cliente));
+                .body(UtilsResponse.created(response));
     }
 
-    /**
-     * Método para buscar um cliente por ID.
-     * @param id ID do cliente a ser buscado.
-     * @return ResponseEntity com o cliente encontrado ou erro 404 se não encontrado.
-     */
-   @GetMapping("/{id}")
-    public ResponseEntity<ClienteResponse> buscarPorId(@PathVariable Long id) {
-        Cliente cliente = clienteService.buscarClientePorId(id);
-        return ResponseEntity.ok(mapper.toResponse(cliente));
-    }
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar cliente por ID")
+    @ApiResponse(responseCode = "200", description = "Cliente encontrado",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Cliente não encontrado", content = @Content)
+    public ResponseEntity<ApiWrapperResponse<ClienteResponse>> buscarPorId(
+        @Parameter(description = "ID do cliente", example = "1") @PathVariable Long id) {
+    Cliente cliente = clienteService.buscarClientePorId(id);
+    ClienteResponse response = mapper.toResponse(cliente);
+    return ResponseEntity.ok(UtilsResponse.success(response));
+}
 
-    /**
-     * Método para buscar um cliente por email.
-     * @param email Email do cliente a ser buscado.
-     * @return ResponseEntity com o cliente encontrado ou erro 404 se não encontrado.
-     */
     @GetMapping("/email")
-    public ResponseEntity<Cliente> buscarPorEmail(@RequestParam String email) {
+    @Operation(summary = "Buscar cliente por e-mail")
+    @ApiResponse(responseCode = "200", description = "Cliente encontrado",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Cliente não encontrado", content = @Content)
+    public ResponseEntity<ApiWrapperResponse<ClienteResponse>> buscarPorEmail(
+            @Parameter(description = "E-mail do cliente", example = "joao@email.com") @RequestParam String email) {
         Cliente cliente = clienteService.buscarClientePorEmail(email);
-        return ResponseEntity.ok(cliente);
+        return ResponseEntity.ok(UtilsResponse.success(mapper.toResponse(cliente)));
     }
 
-    /**
-     * Método para atualizar um cliente existente.
-     * @param id ID do cliente a ser atualizado.
-     * @param dto Dados do cliente a serem atualizados.
-     * @return ResponseEntity com o cliente atualizado ou erro 404 se não encontrado.
-     */
     @PutMapping("/{id}")
-    public ResponseEntity<ClienteResponse> atualizarCliente(@Valid @PathVariable Long id, @RequestBody ClienteRequest request) {
+    @Operation(summary = "Atualizar cliente")
+    @ApiResponse(responseCode = "200", description = "Cliente atualizado",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    public ResponseEntity<ApiWrapperResponse<ClienteResponse>> atualizarCliente(
+            @Parameter(description = "ID do cliente", example = "1") @PathVariable Long id,
+            @RequestBody ClienteRequest request) {
         Cliente clienteAtualizado = clienteService.atualizarCliente(id, request);
-        return ResponseEntity.ok(mapper.toResponse(clienteAtualizado));
+        return ResponseEntity.ok(UtilsResponse.success(mapper.toResponse(clienteAtualizado)));
     }
 
-    /**
-     * Método para ativar ou desativar um cliente.
-     * @param id ID do cliente a ser ativado/desativado.
-     * @return ResponseEntity com o cliente atualizado ou erro 404 se não encontrado.
-     */
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ClienteResponse> alterarStatus(@PathVariable Long id) {
+    @Operation(summary = "Ativar ou desativar cliente")
+    @ApiResponse(responseCode = "200", description = "Status alterado com sucesso",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    public ResponseEntity<ApiWrapperResponse<ClienteResponse>> alterarStatus(
+            @Parameter(description = "ID do cliente", example = "1") @PathVariable Long id) {
         Cliente cliente = clienteService.ativarDesativarCliente(id);
-        return ResponseEntity.ok(mapper.toResponse(cliente));
+        return ResponseEntity.ok(UtilsResponse.success(mapper.toResponse(cliente)));
     }
 
-    /**
-     * Método para listar todos os clientes ativos.
-     * @return ResponseEntity com a lista de clientes ativos.
-     */
     @GetMapping("/ativos")
-    public ResponseEntity<List<Cliente>> listarAtivos() {
+    @Operation(summary = "Listar todos os clientes ativos")
+    @ApiResponse(responseCode = "200", description = "Clientes ativos listados",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    public ResponseEntity<ApiWrapperResponse<List<ClienteResponse>>> listarAtivos() {
         List<Cliente> ativos = clienteService.listarClientesAtivos();
-        return ResponseEntity.ok(ativos);
+        List<ClienteResponse> responses = ativos.stream().map(mapper::toResponse).toList();
+        return ResponseEntity.ok(UtilsResponse.success(responses));
     }
 
-    /**
-     * Método para buscar todos os clientes.
-     * @return ResponseEntity com a lista de todos os clientes.
-     */
     @GetMapping
-    public ResponseEntity<List<Cliente>> listarTodos() {
-        List<Cliente> clientes = clienteService.listarClientesAtivos();
-        return ResponseEntity.ok(clientes);
+    @Operation(summary = "Listar todos os clientes")
+    @ApiResponse(responseCode = "200", description = "Lista de clientes",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    public ResponseEntity<ApiWrapperResponse<List<ClienteResponse>>> listarTodos() {
+        List<Cliente> clientes = clienteService.listarTodosClientes();
+        List<ClienteResponse> responses = clientes.stream().map(mapper::toResponse).toList();
+        return ResponseEntity.ok(UtilsResponse.success(responses));
     }
 
-    /**
-     * Método para buscar clientes por nome.
-     * @param nome Nome do cliente a ser buscado.
-     * @return ResponseEntity com a lista de clientes encontrados.
-     */
     @GetMapping("/nome")
-    public ResponseEntity<List<Cliente>> buscarPorNome(@RequestParam String nome) {
+    @Operation(summary = "Buscar clientes por nome")
+    @ApiResponse(responseCode = "200", description = "Clientes encontrados",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    public ResponseEntity<ApiWrapperResponse<List<ClienteResponse>>> buscarPorNome(
+            @Parameter(description = "Nome do cliente", example = "João da Silva") @RequestParam String nome) {
         List<Cliente> clientes = clienteService.buscarClientesPorNome(nome);
-        return ResponseEntity.ok(clientes); 
+        List<ClienteResponse> responses = clientes.stream().map(mapper::toResponse).toList();
+        return ResponseEntity.ok(UtilsResponse.success(responses));
     }
 
-    /**
-     * Método para buscar clientes por telefone.
-     * @param telefone Telefone do cliente a ser buscado.
-     * @return ResponseEntity com a lista de clientes encontrados.
-     */
     @GetMapping("/buscar-por-telefone")
-    public ResponseEntity<List<Cliente>> buscarPorTelefone(@RequestParam String telefone) {
+    @Operation(summary = "Buscar clientes por telefone")
+    @ApiResponse(responseCode = "200", description = "Clientes encontrados",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    public ResponseEntity<ApiWrapperResponse<List<ClienteResponse>>> buscarPorTelefone(
+            @Parameter(description = "Telefone", example = "11999998888") @RequestParam String telefone) {
         List<Cliente> clientes = clienteService.buscarClientesPorTelefone(telefone);
-        return ResponseEntity.ok(clientes); 
-    }
-    /**
-     * Método para buscar clientes por endereço.
-     * @param endereco Endereço do cliente a ser buscado.
-     * @return ResponseEntity com a lista de clientes encontrados.
-     */
-    @GetMapping("/buscar-por-endereco")
-    public ResponseEntity<List<Cliente>> buscarPorEndereco(@RequestParam String endereco) {
-        List<Cliente> clientes = clienteService.buscarClientesPorEndereco(endereco);
-        return ResponseEntity.ok(clientes); 
+        List<ClienteResponse> responses = clientes.stream().map(mapper::toResponse).toList();
+        return ResponseEntity.ok(UtilsResponse.success(responses));
     }
 
-    /**
-     * Intivar um cliente.
-     * @param id ID do cliente a ser inativado.
-     * @return ResponseEntity com o cliente inativado ou erro 404 se não encontrado.
-     */
+    @GetMapping("/buscar-por-endereco")
+    @Operation(summary = "Buscar clientes por endereço")
+    @ApiResponse(responseCode = "200", description = "Clientes encontrados",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    public ResponseEntity<ApiWrapperResponse<List<ClienteResponse>>> buscarPorEndereco(
+            @Parameter(description = "Endereço", example = "Rua das Flores, 123") @RequestParam String endereco) {
+        List<Cliente> clientes = clienteService.buscarClientesPorEndereco(endereco);
+        List<ClienteResponse> responses = clientes.stream().map(mapper::toResponse).toList();
+        return ResponseEntity.ok(UtilsResponse.success(responses));
+    }
+
     @PatchMapping("/{id}/inativar")
-    public ResponseEntity<Cliente> inativarCliente(@PathVariable Long id) {
+    @Operation(summary = "Inativar cliente")
+    @ApiResponse(responseCode = "200", description = "Cliente inativado",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    public ResponseEntity<ApiWrapperResponse<ClienteResponse>> inativarCliente(
+            @Parameter(description = "ID do cliente", example = "1") @PathVariable Long id) {
         Cliente cliente = clienteService.inativarCliente(id);
-        return ResponseEntity.ok(cliente);
-    }   
-    /**
-     * reativar um cliente.
-     * @param id ID do cliente a ser reativado.
-     * @return ResponseEntity com o cliente reativado ou erro 404 se não encontrado.
-     */
+        return ResponseEntity.ok(UtilsResponse.success(mapper.toResponse(cliente)));
+    }
+
     @PatchMapping("/{id}/reativar")
-    public ResponseEntity<Cliente> reativarCliente(@PathVariable Long id) {
+    @Operation(summary = "Reativar cliente")
+    @ApiResponse(responseCode = "200", description = "Cliente reativado",
+        content = @Content(schema = @Schema(implementation = ClienteResponse.class)))
+    public ResponseEntity<ApiWrapperResponse<ClienteResponse>> reativarCliente(
+            @Parameter(description = "ID do cliente", example = "1") @PathVariable Long id) {
         Cliente cliente = clienteService.ativarCliente(id);
-        return ResponseEntity.ok(cliente);
+        return ResponseEntity.ok(UtilsResponse.success(mapper.toResponse(cliente)));
     }
 }
-  

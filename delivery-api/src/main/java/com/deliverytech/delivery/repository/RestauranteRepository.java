@@ -43,5 +43,12 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, Long> 
     @Query("SELECT DISTINCT r.categoria FROM Restaurante r WHERE r.ativo = true ORDER BY r.categoria")
     List<String> findCategoriasDisponiveis();
 
+    @Query("SELECT r FROM Restaurante r WHERE r.endereco LIKE %:cepPrefix%")
+    List<Restaurante> findByEnderecoContaining(@Param("cepPrefix") String cepPrefix);
+
     List<Restaurante> findByCategoriaIgnoreCase(String categoria);
+
+    List<Restaurante> findByCategoriaIgnoreCaseAndAtivo(String categoria, Boolean ativo);
+
+    List<Restaurante> findByAtivo(Boolean ativo);
 }

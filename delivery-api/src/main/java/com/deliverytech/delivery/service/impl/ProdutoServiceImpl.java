@@ -77,18 +77,39 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
-    public void alterarDisponibilidade(Long id, boolean disponivel) {
+    public ProdutoResponse alterarDisponibilidade(Long id, boolean disponivel) {
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
 
         produto.setDisponivel(disponivel);
         produtoRepository.save(produto);
+
+        return mapper.toResponse(produto);
     }
+
 
     @Override
     public List<ProdutoResponse> buscarProdutosPorCategoria(String categoria) {
         return produtoRepository.findByCategoriaAndDisponivelTrue(categoria)
                 .stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public ProdutoResponse removerProduto(Long id) {
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
+
+        ProdutoResponse response = mapper.toResponse(produto); // converte para DTO antes de deletar
+        produtoRepository.delete(produto);
+        return response;
+    }
+
+    @Override
+    public List<ProdutoResponse> buscarProdutosPorNome(String nome) {
+        List<Produto> produtos = produtoRepository.findByNomeContainingIgnoreCase(nome);
+        return produtos.stream()
                 .map(mapper::toResponse)
                 .toList();
     }

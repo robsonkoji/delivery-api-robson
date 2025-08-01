@@ -17,8 +17,12 @@ public interface ProdutoService {
 
     ProdutoResponse atualizarProduto(Long id, ProdutoRequest request);
 
-    void alterarDisponibilidade(Long id, boolean disponivel);
+    ProdutoResponse alterarDisponibilidade(Long id, boolean disponivel);
 
     List<ProdutoResponse> buscarProdutosPorCategoria(String categoria);
+
+    ProdutoResponse removerProduto(Long id);
+
+    List<ProdutoResponse> buscarProdutosPorNome(String nome);
 
 }

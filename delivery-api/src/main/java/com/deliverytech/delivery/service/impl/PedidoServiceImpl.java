@@ -126,4 +126,28 @@ public class PedidoServiceImpl implements PedidoService {
         pedido.setStatus(StatusPedido.CANCELADO);
         pedidoRepository.save(pedido);
     }
+
+    @Override
+    public List<PedidoResponse> listarPedidosComFiltro(StatusPedido status, LocalDateTime dataInicio, LocalDateTime dataFim) {
+        List<Pedido> pedidos = pedidoRepository.findAll().stream()
+                .filter(p -> (status == null || p.getStatus() == status))
+                .filter(p -> (dataInicio == null || !p.getDataPedido().isBefore(dataInicio)))
+                .filter(p -> (dataFim == null || !p.getDataPedido().isAfter(dataFim)))
+                .toList();
+
+        return pedidos.stream().map(mapper::toResponse).toList();
+    }
+
+
+    @Override
+    public List<PedidoResponse> buscarPedidosPorRestaurante(Long restauranteId) {
+        Restaurante restaurante = restauranteRepository.findById(restauranteId)
+                .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
+
+        return pedidoRepository.findByRestauranteId(restaurante.getId())
+                .stream()
+                .map(mapper::toResponse)
+                .toList();
+    }
+
 }

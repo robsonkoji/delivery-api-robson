@@ -3,14 +3,16 @@ package com.deliverytech.delivery.entity;
 import com.deliverytech.delivery.enums.StatusPedido;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
 @Data
+@NoArgsConstructor
+@Entity
 public class Pedido {
 
     @Id
@@ -23,6 +25,7 @@ public class Pedido {
     private BigDecimal taxaEntrega;
     private BigDecimal valorTotal;
     private String observacoes;
+    private LocalDateTime dataCriacao = LocalDateTime.now();
 
     @Enumerated(EnumType.STRING)
     private StatusPedido status;
@@ -37,6 +40,7 @@ public class Pedido {
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
     private List<ItemPedido> itens = new ArrayList<>();
+    
 
     public void adicionarItem(ItemPedido item) {
         itens.add(item);
@@ -45,17 +49,15 @@ public class Pedido {
 
     public void calcularTotais() {
         this.subtotal = itens.stream()
-            .map(ItemPedido::getSubtotal)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .map(ItemPedido::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
         this.valorTotal = subtotal.add(taxaEntrega != null ? taxaEntrega : BigDecimal.ZERO);
     }
 
-    // Pedido.java (entidade)
     public BigDecimal getTotal() {
-        BigDecimal subtotalItens = itens.stream()
+        return itens.stream()
                 .map(ItemPedido::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        return subtotalItens.add(this.taxaEntrega != null ? this.taxaEntrega : BigDecimal.ZERO);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .add(taxaEntrega != null ? taxaEntrega : BigDecimal.ZERO);
     }
 }

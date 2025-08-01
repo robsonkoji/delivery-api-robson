@@ -11,12 +11,15 @@ import java.util.List;
 @Component
 public class PedidoMapper {
 
+
+        private final ClienteMapper clienteMapper = new ClienteMapper();
+
     public PedidoResponse toResponse(Pedido pedido) {
         List<ItemPedidoResponse> itens = pedido.getItens().stream().map(this::toItemResponse).toList();
 
         PedidoResponse response = new PedidoResponse();
         response.setId(pedido.getId());
-        response.setClienteId(pedido.getCliente().getId());
+        response.setCliente(clienteMapper.toResponse(pedido.getCliente())); // Aqui
         response.setRestauranteId(pedido.getRestaurante().getId());
         response.setEnderecoEntrega(pedido.getEnderecoEntrega());
         response.setObservacoes(pedido.getObservacoes());
