@@ -9,6 +9,7 @@ public class ErrorResponse {
     private int status;
     private String error;
     private String message;
+    private String mensagem;
     private String path;
     private List<String> details; // detalhes específicos, como validações
 

@@ -7,7 +7,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.deliverytech.delivery.enums.CategoriaProduto;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
@@ -23,7 +23,7 @@ public class Produto {
     private String nome;
     private String descricao;
     private BigDecimal preco;
-    private CategoriaProduto categoria;
+    private String categoria;
     private boolean disponivel;
 
     public Boolean getDisponivel() {

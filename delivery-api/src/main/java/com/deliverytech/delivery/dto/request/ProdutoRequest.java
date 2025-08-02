@@ -2,7 +2,6 @@ package com.deliverytech.delivery.dto.request;
 
 import java.math.BigDecimal;
 
-import com.deliverytech.delivery.enums.CategoriaProduto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMax;
@@ -33,7 +32,7 @@ public class ProdutoRequest {
 
     @NotNull(message = "Categoria é obrigatória")
     @Schema(description = "Categoria do produto", example = "PIZZAS")
-    private CategoriaProduto categoria;
+    private String categoria;
 
     @NotNull(message = "Disponibilidade é obrigatória")
     @Schema(description = "Indica se o produto está disponível para pedidos", example = "true")

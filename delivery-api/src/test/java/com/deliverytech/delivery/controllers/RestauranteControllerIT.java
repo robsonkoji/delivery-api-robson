@@ -2,7 +2,6 @@ package com.deliverytech.delivery.controllers;
 
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
 import com.deliverytech.delivery.entity.Restaurante;
-import com.deliverytech.delivery.enums.CategoriaRestaurante;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,7 +42,7 @@ class RestauranteControllerIT {
 
         Restaurante r1 = new Restaurante();
         r1.setNome("Sushi House");
-        r1.setCategoria(CategoriaRestaurante.JAPONESA);
+        r1.setCategoria("Japonesa");
         r1.setEndereco("Av.Japonesa,123 - 01001-0000");
         r1.setTelefone("1190000-0000");
         r1.setTaxaEntrega(BigDecimal.valueOf(10.00));
@@ -51,7 +50,7 @@ class RestauranteControllerIT {
 
         Restaurante r2 = new Restaurante();
         r2.setNome("Pizza Bella");
-        r2.setCategoria(CategoriaRestaurante.ITALIANA);
+        r2.setCategoria("italiana");
         r2.setEndereco("Av.Italiana,123 - 00000-0000");
         r2.setTelefone("1190000-0000");
         r2.setTaxaEntrega(BigDecimal.valueOf(5.00));
@@ -59,7 +58,7 @@ class RestauranteControllerIT {
 
         Restaurante r3 = new Restaurante();
         r3.setNome("Burger King");
-        r3.setCategoria(CategoriaRestaurante.FAST_FOOD);
+        r3.setCategoria("fast-food");
         r3.setEndereco("Av.Fast,123 - 00000-0000");
         r3.setTelefone("1190000-0000");
         r3.setTaxaEntrega(BigDecimal.valueOf(7.00));
@@ -75,7 +74,9 @@ class RestauranteControllerIT {
         request.setNome("Restaurante Novo");
         request.setCategoria("Brasileira");
         request.setEndereco("Av. 01 - 00000-000");
-        request.setTelefone("1190000-0000");
+        request.setTelefone("11900000000");
+        request.setHorarioFuncionamento("10:00-22:00");
+        request.setTempoEntrega(10);
         request.setTaxaEntrega(BigDecimal.valueOf(8.50));
         request.setAtivo(true);
 
@@ -123,10 +124,11 @@ class RestauranteControllerIT {
         RestauranteRequest request = new RestauranteRequest();
         request.setNome(restauranteExistente.getNome()); // mesmo nome
         request.setCategoria("Categoria");
-        request.setEndereco("Endereco");
-        request.setTelefone("1199999-9999");
+        request.setEndereco("Endereco, cep 70000-010");
+        request.setTelefone("11999999999");
         request.setTaxaEntrega(BigDecimal.valueOf(5.0));
-        request.setAtivo(true);
+        request.setTempoEntrega(10);
+        request.setHorarioFuncionamento("10:00-12:00");
 
         mockMvc.perform(post("/api/restaurantes")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -208,4 +210,75 @@ class RestauranteControllerIT {
             .andExpect(jsonPath("$.dados").isArray());
     }
     
+        // ❌ Cadastro com nome vazio
+    @Test
+    void deveRetornar400QuandoNomeVazio() throws Exception {
+        RestauranteRequest request = new RestauranteRequest();
+        request.setNome(""); // inválido
+        request.setCategoria("Japonesa");
+        request.setEndereco("Av. 01 - 00000-000");
+        request.setTelefone("1190000-0000");
+        request.setTaxaEntrega(BigDecimal.valueOf(8.5));
+        request.setAtivo(true);
+
+        mockMvc.perform(post("/api/restaurantes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.details").isArray());
+    }
+
+    // ❌ Cadastro com categoria inválida (não mapeada no enum)
+    @Test
+    void deveRetornar422QuandoCategoriaInvalida() throws Exception {
+        RestauranteRequest request = new RestauranteRequest();
+        request.setNome("Nome válido");
+        request.setCategoria("CategoriaNaoExistente");
+        request.setEndereco("Av. Exemplo - 00000-000");
+        request.setTelefone("1190000-0000");
+        request.setTaxaEntrega(BigDecimal.valueOf(5.0));
+        request.setAtivo(true);
+
+        mockMvc.perform(post("/api/restaurantes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(jsonPath("$.message").value("Categoria inválida: CategoriaNaoExistente"));
+    }
+
+    // ❌ Cadastro com telefone em formato inválido
+    @Test
+    void deveRetornar400QuandoTelefoneInvalido() throws Exception {
+        RestauranteRequest request = new RestauranteRequest();
+        request.setNome("Teste");
+        request.setCategoria("Italiana");
+        request.setEndereco("Endereço Exemplo");
+        request.setTelefone("telefone-invalido"); // inválido
+        request.setTaxaEntrega(BigDecimal.valueOf(10));
+        request.setAtivo(true);
+
+        mockMvc.perform(post("/api/restaurantes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.details").isArray());
+    }
+
+    // ❌ Cadastro com taxa de entrega negativa
+    @Test
+    void deveRetornar400QuandoTaxaEntregaNegativa() throws Exception {
+        RestauranteRequest request = new RestauranteRequest();
+        request.setNome("Teste");
+        request.setCategoria("Brasileira");
+        request.setEndereco("Endereço Exemplo");
+        request.setTelefone("1190000-0000");
+        request.setTaxaEntrega(BigDecimal.valueOf(-5.0)); // inválida
+        request.setAtivo(true);
+
+        mockMvc.perform(post("/api/restaurantes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.details").isArray());
+    }
 }

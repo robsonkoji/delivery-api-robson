@@ -2,7 +2,6 @@ package com.deliverytech.delivery.dto.response;
 
 import java.math.BigDecimal;
 
-import com.deliverytech.delivery.enums.CategoriaProduto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -22,7 +21,7 @@ public class ProdutoResponse {
     private BigDecimal preco;
 
     @Schema(description = "Categoria do produto", example = "PIZZAS")
-    private CategoriaProduto categoria;
+    private String categoria;
 
     @Schema(description = "Disponibilidade do produto", example = "true")
     private boolean disponivel;

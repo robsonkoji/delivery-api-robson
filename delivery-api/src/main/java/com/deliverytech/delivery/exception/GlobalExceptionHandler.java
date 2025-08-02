@@ -47,17 +47,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        List<String> details = ex.getBindingResult().getFieldErrors()
-                .stream()
-                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+        List<String> errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .toList();
 
-        return buildErrorResponse(
-                "Erro de validação nos campos enviados.",
-                HttpStatus.BAD_REQUEST, // 400
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
+                "Violação de validação de campos",
                 request.getRequestURI(),
-                details
+                errors
         );
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
     }
 
     @ExceptionHandler(Exception.class)
@@ -81,4 +84,6 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(status).body(response);
     }
+    
+
 }

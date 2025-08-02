@@ -1,7 +1,6 @@
 package com.deliverytech.delivery.dto.request;
 
-import com.deliverytech.delivery.enums.CategoriaRestaurante;
-import com.deliverytech.delivery.validation.ValidCategoria;
+
 import com.deliverytech.delivery.validation.ValidCEP;
 import com.deliverytech.delivery.validation.ValidHorarioFuncionamento;
 import com.deliverytech.delivery.validation.ValidTelefone;
@@ -21,7 +20,6 @@ public class RestauranteRequest {
     private String nome;
 
     @NotBlank(message = "Categoria é obrigatória")
-    @ValidCategoria(enumClass = CategoriaRestaurante.class)
     @Schema(example = "BRASILEIRA", description = "Categoria do restaurante (ex: BRASILEIRA, JAPONESA)")
     private String categoria;
 

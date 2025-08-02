@@ -257,6 +257,23 @@ class PedidoControllerIT {
     }
 
     @Test
+    void deveRetornarErro422AoCriarPedidoSemItens() throws Exception {
+        PedidoRequest request = new PedidoRequest();
+        request.setClienteId(cliente.getId());
+        request.setRestauranteId(restaurante.getId());
+        request.setEnderecoEntrega("Rua das Flores, 123");
+        request.setItens(List.of()); // Nenhum item
+
+        mockMvc.perform(post("/api/pedidos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.mensagem").value("Violação de validação de campos"));
+    }
+
+
+    @Test
     void deveRetornarPedidosPaginadosComMetadados() throws Exception {
         for (int i = 0; i < 5; i++) {
             Pedido pedido = new Pedido();
