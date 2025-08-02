@@ -23,7 +23,7 @@ public class PedidoMapper {
         response.setRestauranteId(pedido.getRestaurante().getId());
         response.setEnderecoEntrega(pedido.getEnderecoEntrega());
         response.setObservacoes(pedido.getObservacoes());
-        response.setStatus(pedido.getStatus().name());
+        response.setStatus(pedido.getStatus());
         response.setDataPedido(pedido.getDataPedido());
         response.setTaxaEntrega(pedido.getTaxaEntrega());
         response.setTotal(pedido.getTotal());

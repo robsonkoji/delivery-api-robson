@@ -48,7 +48,7 @@ class ProdutoControllerIT {
 
         restauranteExistente = new Restaurante();
         restauranteExistente.setNome("Restaurante Exemplo");
-        restauranteExistente.setCategoria("Restaurante");
+        restauranteExistente.setCategoria("brasileira");
         restauranteExistente.setTaxaEntrega(new BigDecimal("5.00"));
         restauranteExistente.setEndereco("Rua das Laranjeiras, 456");
         restauranteExistente.setTelefone("11999999999");
@@ -58,7 +58,7 @@ class ProdutoControllerIT {
         produtoExistente.setNome("X-Burguer");
         produtoExistente.setDescricao("Hambúrguer simples");
         produtoExistente.setPreco(new BigDecimal("12.50"));
-        produtoExistente.setCategoria("Lanches");
+        produtoExistente.setCategoria("lanche");
         produtoExistente.setDisponivel(true);
         produtoExistente.setRestaurante(restauranteExistente);
         produtoExistente = produtoRepository.save(produtoExistente);
@@ -71,7 +71,7 @@ class ProdutoControllerIT {
         request.setDescricao("Com salada");
         request.setPreco(new BigDecimal("18.50"));
         request.setDisponivel(true);
-        request.setCategoria("Lanches");
+        request.setCategoria("lanche");
         request.setRestauranteId(restauranteExistente.getId());
 
         mockMvc.perform(post("/api/produtos")
@@ -98,7 +98,7 @@ class ProdutoControllerIT {
         request.setDescricao("Duplicado");
         request.setPreco(new BigDecimal("15.00"));
         request.setDisponivel(true);
-        request.setCategoria("Lanches");
+        request.setCategoria("lanche");
         request.setRestauranteId(restauranteExistente.getId());
 
         mockMvc.perform(post("/api/produtos")
@@ -127,7 +127,7 @@ class ProdutoControllerIT {
         request.setDescricao("Atualizado");
         request.setPreco(new BigDecimal("20.00"));
         request.setDisponivel(true);
-        request.setCategoria("Lanches");
+        request.setCategoria("lanche");
         request.setRestauranteId(restauranteExistente.getId());
 
         mockMvc.perform(put("/api/produtos/{id}", produtoExistente.getId())
@@ -160,5 +160,23 @@ class ProdutoControllerIT {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.meta.totalElements").exists())
             .andExpect(jsonPath("$.meta.size").value(10));
+    }
+
+    @Test
+    void deveRetornarErro422AoCadastrarProdutoComPrecoNegativo() throws Exception {
+        ProdutoRequest request = new ProdutoRequest();
+        request.setNome("Produto Inválido");
+        request.setDescricao("Preço negativo");
+        request.setPreco(new BigDecimal("-5.00")); // <- preço negativo
+        request.setDisponivel(true);
+        request.setCategoria("lanche");
+        request.setRestauranteId(restauranteExistente.getId());
+
+        mockMvc.perform(post("/api/produtos")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(jsonPath("$.message").value("Violação de validação de campos"))
+            .andExpect(jsonPath("$.details[0]").value("preco: Preço deve ser maior que zero"));
     }
 }

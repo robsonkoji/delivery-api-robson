@@ -18,18 +18,18 @@ public class PedidoRequest {
     private Long clienteId;
 
     @NotNull(message = "ID do restaurante é obrigatório")
-    @Schema(description = "ID do restaurante onde o pedido será feito", example = "1")
+    @Schema(description = "ID do restaurante onde o pedido será feito", example = "10")
     private Long restauranteId;
 
     @NotBlank(message = "Endereço de entrega é obrigatório")
-    @Schema(description = "Endereço onde o pedido será entregue", example = "endereco1, 123")
+    @Schema(description = "Endereço completo para entrega do pedido", example = "Av. Paulista, 1000 - CEP 01310-100")
     private String enderecoEntrega;
 
     @Schema(description = "Observações adicionais para o pedido", example = "Sem cebola, por favor")
     private String observacoes;
 
     @Valid
-    @NotEmpty(message = "Pedido deve conter pelo menos um item")
+    @NotEmpty(message = "O pedido deve conter pelo menos um item")
     @Schema(description = "Lista de itens do pedido")
     private List<ItemPedidoRequest> itens;
 }
