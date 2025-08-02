@@ -3,8 +3,7 @@ package com.deliverytech.delivery.mapper;
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
 import com.deliverytech.delivery.dto.response.RestauranteResponse;
 import com.deliverytech.delivery.entity.Restaurante;
-
-
+import com.deliverytech.delivery.enums.CategoriaRestaurante;
 
 import org.springframework.stereotype.Component;
 
@@ -17,7 +16,15 @@ public class RestauranteMapper {
         restaurante.setNome(request.getNome());
         restaurante.setTelefone(request.getTelefone());
         restaurante.setEndereco(request.getEndereco());
-        restaurante.setCategoria(request.getCategoria());
+        
+        try {
+        CategoriaRestaurante categoria = CategoriaRestaurante.valueOf(request.getCategoria().toUpperCase());
+        restaurante.setCategoria(categoria);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Categoria inválida: " + request.getCategoria());
+            }
+
+
         restaurante.setTaxaEntrega(request.getTaxaEntrega());
         return restaurante;
     }

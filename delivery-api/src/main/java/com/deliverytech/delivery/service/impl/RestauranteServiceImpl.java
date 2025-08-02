@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
 import com.deliverytech.delivery.dto.response.RestauranteResponse;
 import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.enums.CategoriaRestaurante;
 import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.mapper.RestauranteMapper;
 import com.deliverytech.delivery.repository.RestauranteRepository;
@@ -42,7 +43,11 @@ public class RestauranteServiceImpl implements RestauranteService {
         Restaurante restaurante = buscarOuLancar(id);
 
         restaurante.setNome(request.getNome());
-        restaurante.setCategoria(request.getCategoria());
+        try {
+        restaurante.setCategoria(CategoriaRestaurante.valueOf(request.getCategoria().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Categoria inválida: " + request.getCategoria());
+            }
         restaurante.setEndereco(request.getEndereco());
         restaurante.setTelefone(request.getTelefone());
         restaurante.setTaxaEntrega(request.getTaxaEntrega());

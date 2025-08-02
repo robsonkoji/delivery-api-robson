@@ -1,43 +1,56 @@
 package com.deliverytech.delivery.dto.request;
 
-import java.math.BigDecimal;
+import com.deliverytech.delivery.enums.CategoriaRestaurante;
+import com.deliverytech.delivery.validation.ValidCategoria;
+import com.deliverytech.delivery.validation.ValidCEP;
+import com.deliverytech.delivery.validation.ValidHorarioFuncionamento;
+import com.deliverytech.delivery.validation.ValidTelefone;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.*;
 import lombok.Data;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 
+import java.math.BigDecimal;
 
 @Data
 public class RestauranteRequest {
 
     @NotBlank(message = "Nome é obrigatório")
-    @Schema(example = "restaurante1")
+    @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
+    @Schema(example = "Restaurante da Esquina")
     private String nome;
 
     @NotBlank(message = "Categoria é obrigatória")
-    @Schema(example = "categoria1")
+    @ValidCategoria(enumClass = CategoriaRestaurante.class)
+    @Schema(example = "BRASILEIRA", description = "Categoria do restaurante (ex: BRASILEIRA, JAPONESA)")
     private String categoria;
 
-    @DecimalMin(value = "0.0", inclusive = true, message = "A taxa de entrega deve ser positiva")
     @NotNull(message = "Taxa de entrega é obrigatória")
-    @Schema(example = "5.90")
+    @DecimalMin(value = "0.0", inclusive = false, message = "A taxa de entrega deve ser maior que zero")
+    @Schema(example = "6.99")
     private BigDecimal taxaEntrega;
 
     @NotBlank(message = "Telefone é obrigatório")
-    @Schema(example = "(11) 99999-9999")
+    @ValidTelefone
+    @Schema(example = "11999998888", description = "Telefone com 10 ou 11 dígitos numéricos")
     private String telefone;
 
     @NotBlank(message = "Endereço é obrigatório")
-    @Schema(example = "endereco1, 123 - cep 10000-000")
-    // Exemplo simples para validar CEP brasileiro: 5 dígitos + hífen + 3 dígitos opcional
-    @Pattern(regexp = ".*\\d{5}-?\\d{3}.*", message = "O endereço deve conter um CEP válido")
+    @ValidCEP
+    @Schema(example = "Rua das Flores, 123 - 01000-000", description = "Deve conter um CEP válido no formato 00000-000")
     private String endereco;
 
-    
+    @NotNull(message = "Tempo de entrega é obrigatório")
+    @Min(value = 10, message = "Tempo de entrega deve ser no mínimo 10 minutos")
+    @Max(value = 120, message = "Tempo de entrega deve ser no máximo 120 minutos")
+    @Schema(example = "45")
+    private Integer tempoEntrega;
 
+    @NotBlank(message = "Horário de funcionamento é obrigatório")
+    @ValidHorarioFuncionamento
+    @Schema(example = "10:00-22:00", description = "Formato HH:MM-HH:MM")
+    private String horarioFuncionamento;
+
+    @Schema(example = "true")
     private Boolean ativo = true;
-
 }

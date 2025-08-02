@@ -1,5 +1,8 @@
 package com.deliverytech.delivery.dto.request;
 
+import com.deliverytech.delivery.validation.ValidCEP;
+import com.deliverytech.delivery.validation.ValidTelefone;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
@@ -19,6 +22,7 @@ public class ClienteRequest {
     private String email;
 
     @NotBlank(message = "Telefone é obrigatório")
+    @ValidTelefone
     @Size(min = 10, max = 20)
     @Schema(description = "Número de telefone do cliente", example = "(11) 91234-5678")
     private String telefone;
@@ -29,6 +33,7 @@ public class ClienteRequest {
     private String senha;*/
 
     @NotBlank(message = "Endereço é obrigatório")
+    @ValidCEP
     @Schema(description = "Endereço residencial do cliente", example = "endereco1, 123, cep 10000-000")
     private String endereco;
 

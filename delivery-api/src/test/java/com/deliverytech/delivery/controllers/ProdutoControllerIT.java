@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.deliverytech.delivery.dto.request.ProdutoRequest;
 import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.enums.CategoriaProduto;
+import com.deliverytech.delivery.enums.CategoriaRestaurante;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,7 +50,7 @@ class ProdutoControllerIT {
 
         restauranteExistente = new Restaurante();
         restauranteExistente.setNome("Restaurante Exemplo");
-        restauranteExistente.setCategoria("Restaurante");
+        restauranteExistente.setCategoria(CategoriaRestaurante.BRASILEIRA);
         restauranteExistente.setTaxaEntrega(new BigDecimal("5.00"));
         restauranteExistente.setEndereco("Rua das Laranjeiras, 456");
         restauranteExistente.setTelefone("11999999999");
@@ -58,7 +60,7 @@ class ProdutoControllerIT {
         produtoExistente.setNome("X-Burguer");
         produtoExistente.setDescricao("Hambúrguer simples");
         produtoExistente.setPreco(new BigDecimal("12.50"));
-        produtoExistente.setCategoria("Lanches");
+        produtoExistente.setCategoria(CategoriaProduto.LANCHE);
         produtoExistente.setDisponivel(true);
         produtoExistente.setRestaurante(restauranteExistente);
         produtoExistente = produtoRepository.save(produtoExistente);
@@ -71,7 +73,7 @@ class ProdutoControllerIT {
         request.setDescricao("Com salada");
         request.setPreco(new BigDecimal("18.50"));
         request.setDisponivel(true);
-        request.setCategoria("Lanches");
+        request.setCategoria(CategoriaProduto.LANCHE);
         request.setRestauranteId(restauranteExistente.getId());
 
         mockMvc.perform(post("/api/produtos")
@@ -98,7 +100,7 @@ class ProdutoControllerIT {
         request.setDescricao("Duplicado");
         request.setPreco(new BigDecimal("15.00"));
         request.setDisponivel(true);
-        request.setCategoria("Lanches");
+        request.setCategoria(CategoriaProduto.LANCHE);
         request.setRestauranteId(restauranteExistente.getId());
 
         mockMvc.perform(post("/api/produtos")
@@ -127,7 +129,7 @@ class ProdutoControllerIT {
         request.setDescricao("Atualizado");
         request.setPreco(new BigDecimal("20.00"));
         request.setDisponivel(true);
-        request.setCategoria("Lanches");
+        request.setCategoria(CategoriaProduto.LANCHE);
         request.setRestauranteId(restauranteExistente.getId());
 
         mockMvc.perform(put("/api/produtos/{id}", produtoExistente.getId())

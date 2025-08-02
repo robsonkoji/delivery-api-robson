@@ -6,6 +6,7 @@ import java.util.List;
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
 import com.deliverytech.delivery.dto.response.RestauranteResponse;
 
+
 public interface RestauranteService {
     
     RestauranteResponse cadastrarRestaurante(RestauranteRequest request);

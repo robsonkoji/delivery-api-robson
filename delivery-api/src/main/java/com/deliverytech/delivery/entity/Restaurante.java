@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.deliverytech.delivery.enums.CategoriaRestaurante;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
@@ -26,7 +27,7 @@ public class Restaurante {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nome;
-    private String categoria;
+    private CategoriaRestaurante categoria;
     private String endereco;
     private String telefone;
     private LocalDateTime dataCriacao = LocalDateTime.now();

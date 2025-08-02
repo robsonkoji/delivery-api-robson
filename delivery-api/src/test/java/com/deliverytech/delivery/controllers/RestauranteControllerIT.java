@@ -2,6 +2,7 @@ package com.deliverytech.delivery.controllers;
 
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
 import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.enums.CategoriaRestaurante;
 import com.deliverytech.delivery.repository.RestauranteRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,7 +43,7 @@ class RestauranteControllerIT {
 
         Restaurante r1 = new Restaurante();
         r1.setNome("Sushi House");
-        r1.setCategoria("Japonesa");
+        r1.setCategoria(CategoriaRestaurante.JAPONESA);
         r1.setEndereco("Av.Japonesa,123 - 01001-0000");
         r1.setTelefone("1190000-0000");
         r1.setTaxaEntrega(BigDecimal.valueOf(10.00));
@@ -50,7 +51,7 @@ class RestauranteControllerIT {
 
         Restaurante r2 = new Restaurante();
         r2.setNome("Pizza Bella");
-        r2.setCategoria("Italiana");
+        r2.setCategoria(CategoriaRestaurante.ITALIANA);
         r2.setEndereco("Av.Italiana,123 - 00000-0000");
         r2.setTelefone("1190000-0000");
         r2.setTaxaEntrega(BigDecimal.valueOf(5.00));
@@ -58,7 +59,7 @@ class RestauranteControllerIT {
 
         Restaurante r3 = new Restaurante();
         r3.setNome("Burger King");
-        r3.setCategoria("Fast Food");
+        r3.setCategoria(CategoriaRestaurante.FAST_FOOD);
         r3.setEndereco("Av.Fast,123 - 00000-0000");
         r3.setTelefone("1190000-0000");
         r3.setTaxaEntrega(BigDecimal.valueOf(7.00));
@@ -206,4 +207,5 @@ class RestauranteControllerIT {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.dados").isArray());
     }
+    
 }
