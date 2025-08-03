@@ -2,30 +2,17 @@ package com.deliverytech.delivery.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class AuthRequest {
 
-    @Email
-    @NotBlank
+    @Email(message = "Email inválido")
+    @NotBlank(message = "Email é obrigatório")
     private String email;
 
-    @NotBlank
+    @NotBlank(message = "Senha é obrigatória")
     private String senha;
-
-    // Getters e setters
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
 }
