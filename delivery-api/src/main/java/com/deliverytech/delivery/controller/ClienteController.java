@@ -11,6 +11,7 @@ import com.deliverytech.delivery.service.ClienteService;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -37,6 +38,7 @@ public class ClienteController {
         this.mapper = mapper;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     @Operation(summary = "Cadastrar um novo cliente")
     @ApiResponse(responseCode = "201", description = "Cliente cadastrado com sucesso",
@@ -84,6 +86,7 @@ public class ClienteController {
         return ResponseEntity.ok(UtilsResponse.success(mapper.toResponse(clienteAtualizado)));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/status")
     @Operation(summary = "Ativar ou desativar cliente")
     @ApiResponse(responseCode = "200", description = "Status alterado com sucesso",
@@ -147,6 +150,7 @@ public class ClienteController {
         return ResponseEntity.ok(UtilsResponse.success(responses));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/inativar")
     @Operation(summary = "Inativar cliente")
     @ApiResponse(responseCode = "200", description = "Cliente inativado",
@@ -157,6 +161,7 @@ public class ClienteController {
         return ResponseEntity.ok(UtilsResponse.success(mapper.toResponse(cliente)));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/reativar")
     @Operation(summary = "Reativar cliente")
     @ApiResponse(responseCode = "200", description = "Cliente reativado",

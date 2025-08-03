@@ -4,12 +4,16 @@ import com.deliverytech.delivery.dto.request.ProdutoRequest;
 import com.deliverytech.delivery.dto.response.ProdutoResponse;
 import com.deliverytech.delivery.entity.Produto;
 import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.entity.Usuario;
 import com.deliverytech.delivery.exception.BusinessException;
 import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.mapper.ProdutoMapper;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import com.deliverytech.delivery.repository.RestauranteRepository;
+import com.deliverytech.delivery.security.SecurityUtils;
 import com.deliverytech.delivery.service.ProdutoService;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,6 +37,12 @@ public class ProdutoServiceImpl implements ProdutoService {
     public ProdutoResponse cadastrarProduto(ProdutoRequest request) {
         Restaurante restaurante = restauranteRepository.findById(request.getRestauranteId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
+
+        // Permite apenas ADMIN ou o dono do restaurante
+        if (!SecurityUtils.hasRole("ADMIN") &&
+            !restaurante.getUsuario().getId().equals(SecurityUtils.getCurrentUserId())) {
+            throw new BusinessException("Acesso negado: você não tem permissão para cadastrar produto neste restaurante.");
+        }
 
         Produto produto = mapper.toEntity(request, restaurante);
         Produto salvo = produtoRepository.save(produto);
@@ -66,6 +76,12 @@ public class ProdutoServiceImpl implements ProdutoService {
 
         Restaurante restaurante = restauranteRepository.findById(request.getRestauranteId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
+
+        // Verifica se é ADMIN ou dono do restaurante
+        if (!SecurityUtils.hasRole("ADMIN") &&
+            !restaurante.getUsuario().getId().equals(SecurityUtils.getCurrentUserId())) {
+            throw new BusinessException("Acesso negado: você não tem permissão para atualizar este produto.");
+        }
 
         produto.setNome(request.getNome());
         produto.setDescricao(request.getDescricao());
@@ -112,5 +128,21 @@ public class ProdutoServiceImpl implements ProdutoService {
         return produtos.stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public boolean isOwner(Long produtoId) {
+        Produto produto = produtoRepository.findById(produtoId)
+                .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
+
+        // Obtém o usuário logado
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof Usuario usuario) {
+            Restaurante restaurante = produto.getRestaurante();
+            return restaurante.getUsuario().getId().equals(usuario.getId());
+        }
+
+        return false;
     }
 }

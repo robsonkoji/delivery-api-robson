@@ -3,6 +3,7 @@ package com.deliverytech.delivery.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,7 @@ public class ProdutoController {
 
     private final ProdutoService produtoService;
 
+    @PreAuthorize("hasRole('RESTAURANTE') or hasRole('ADMIN')")
     @Operation(summary = "Cadastrar um novo produto")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Produto cadastrado com sucesso"),
@@ -59,6 +61,7 @@ public class ProdutoController {
         return ResponseEntity.ok(UtilsResponse.success(response));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @produtoService.isOwner(#id)")
     @Operation(summary = "Atualizar um produto existente")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Produto atualizado com sucesso"),
@@ -77,6 +80,7 @@ public class ProdutoController {
         return ResponseEntity.ok(UtilsResponse.success(response));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @produtoService.isOwner(#id)")
     @Operation(summary = "Remover produto por ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Produto removido com sucesso"),
@@ -91,6 +95,7 @@ public class ProdutoController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @produtoServiceImpl.isOwner(#id)")
     @Operation(summary = "Alterar disponibilidade de um produto")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Disponibilidade alterada com sucesso"),

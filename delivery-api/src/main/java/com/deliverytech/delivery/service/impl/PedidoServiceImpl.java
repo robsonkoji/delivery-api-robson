@@ -10,11 +10,17 @@ import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.exception.TransactionException;
 import com.deliverytech.delivery.mapper.PedidoMapper;
 import com.deliverytech.delivery.repository.*;
+import com.deliverytech.delivery.security.SecurityUtils;
 import com.deliverytech.delivery.service.PedidoService;
+import com.deliverytech.delivery.service.UsuarioService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+
+
 import org.springframework.stereotype.Service;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,6 +31,7 @@ import java.util.List;
 @Transactional
 public class PedidoServiceImpl implements PedidoService {
 
+    private final UsuarioService usuarioService;
     private final PedidoRepository pedidoRepository;
     private final ClienteRepository clienteRepository;
     private final RestauranteRepository restauranteRepository;
@@ -33,6 +40,12 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Override
     public PedidoResponse criarPedido(PedidoRequest request) {
+        Usuario usuario = usuarioService.getUsuarioLogado();
+
+        if (!SecurityUtils.hasRole("ADMIN") && !request.getClienteId().equals(usuario.getId())) {
+            throw new BusinessException("Você não tem permissão para criar pedidos para outros clientes.");
+        }
+
         Cliente cliente = clienteRepository.findById(request.getClienteId())
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
 
@@ -78,22 +91,32 @@ public class PedidoServiceImpl implements PedidoService {
         return mapper.toResponse(salvo);
     }
 
+
     @Override
     public PedidoResponse buscarPedidoPorId(Long id) {
+        if (!canAccess(id)) {
+            throw new BusinessException("Você não tem permissão para visualizar este pedido.");
+        }
+
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
+
         return mapper.toResponse(pedido);
     }
 
-    @Override
+   @Override
     public List<PedidoResponse> buscarPedidosPorCliente(Long clienteId) {
-        return pedidoRepository.findByClienteId(clienteId).stream()
+         return pedidoRepository.findByClienteId(clienteId).stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
     @Override
     public PedidoResponse atualizarStatusPedido(Long id, StatusPedido novoStatus) {
+        if (!canAccess(id)) {
+            throw new BusinessException("Você não tem permissão para atualizar o status deste pedido.");
+        }
+
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
 
@@ -105,6 +128,7 @@ public class PedidoServiceImpl implements PedidoService {
         return mapper.toResponse(pedidoRepository.save(pedido));
     }
 
+
     @Override
     public BigDecimal calcularTotalPedido(List<ItemPedidoRequest> itensRequest) {
         return itensRequest.stream().map(itemDto -> {
@@ -114,18 +138,24 @@ public class PedidoServiceImpl implements PedidoService {
         }).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+
     @Override
-    public void cancelarPedido(Long id) {
-        Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
-
-        if (pedido.getStatus() != StatusPedido.CRIADO) {
-            throw new TransactionException("Apenas pedidos criados podem ser cancelados.");
-        }
-
-        pedido.setStatus(StatusPedido.CANCELADO);
-        pedidoRepository.save(pedido);
+public void cancelarPedido(Long id) {
+    if (!canAccess(id)) {
+        throw new BusinessException("Você não tem permissão para cancelar este pedido.");
     }
+
+    Pedido pedido = pedidoRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
+
+    if (pedido.getStatus() != StatusPedido.CRIADO) {
+        throw new TransactionException("Apenas pedidos criados podem ser cancelados.");
+    }
+
+    pedido.setStatus(StatusPedido.CANCELADO);
+    pedidoRepository.save(pedido);
+}
+
 
     @Override
     public List<PedidoResponse> listarPedidosComFiltro(StatusPedido status, LocalDateTime dataInicio, LocalDateTime dataFim) {
@@ -148,6 +178,26 @@ public class PedidoServiceImpl implements PedidoService {
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    public boolean canAccess(Long pedidoId) {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+            .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
+
+        Usuario usuario = usuarioService.getUsuarioLogado(); // método que você deve ter para pegar usuário logado
+
+        return switch (usuario.getRole()) {
+            case ADMIN -> true;
+
+            case CLIENTE -> pedido.getCliente() != null &&
+                        pedido.getCliente().getUsuario().getId().equals(usuario.getId());
+
+            case RESTAURANTE -> pedido.getRestaurante() != null &&
+                            pedido.getRestaurante().getUsuario().getId().equals(usuario.getId());
+
+            default -> false;
+        };
     }
 
 }

@@ -3,7 +3,11 @@ package com.deliverytech.delivery.service;
 import com.deliverytech.delivery.dto.request.RegisterRequest;
 import com.deliverytech.delivery.entity.Usuario;
 import com.deliverytech.delivery.enums.Role;
+import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.repository.UsuarioRepository;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -46,6 +50,19 @@ public class UsuarioService {
 
     public boolean existsByEmail(String email) {
     return usuarioRepository.existsByEmail(email);
+}
+
+public Usuario getUsuarioLogado() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+    if (auth == null || !auth.isAuthenticated()) {
+        throw new RuntimeException("Usuário não está autenticado");
+    }
+
+    String email = auth.getName(); // aqui geralmente é o username/email
+
+    return usuarioRepository.findByEmail(email)
+        .orElseThrow(() -> new EntityNotFoundException("Usuário logado não encontrado"));
 }
 
 }
