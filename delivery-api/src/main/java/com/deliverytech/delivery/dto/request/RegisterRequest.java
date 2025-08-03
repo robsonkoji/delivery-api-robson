@@ -29,6 +29,6 @@ public class RegisterRequest {
     @NotNull(message = "Role é obrigatória")
     private Role role;
 
-    @Schema(description = "ID do restaurante associado, se aplicável", example = "10", nullable = true)
+    @Schema(description = "ID do restaurante associado, se aplicável", example = "10")
     private Long restauranteId; // Pode ser null
 }

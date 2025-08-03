@@ -90,7 +90,6 @@ public class AuthController {
         description = "Cria um novo usuário com os dados fornecidos, se o email ainda não estiver cadastrado.",
         requestBody = @RequestBody(
             description = "Dados para registro de usuário",
-            required = true,
             content = @Content(schema = @Schema(implementation = RegisterRequest.class))
         ),
         responses = {

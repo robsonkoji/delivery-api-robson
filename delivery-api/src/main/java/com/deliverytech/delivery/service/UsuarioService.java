@@ -44,6 +44,7 @@ public class UsuarioService {
         if (request.getRole() == Role.RESTAURANTE) {
             usuario.setRestauranteId(request.getRestauranteId());
         }
+        
 
         return usuarioRepository.save(usuario);
     }
