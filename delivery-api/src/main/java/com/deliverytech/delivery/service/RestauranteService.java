@@ -26,5 +26,5 @@ public interface RestauranteService {
 
     List<RestauranteResponse> buscarRestaurantesProximos(String cep);
 
-
+    boolean isOwner(Long restauranteId);
 }

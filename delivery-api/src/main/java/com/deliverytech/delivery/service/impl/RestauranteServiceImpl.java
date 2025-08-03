@@ -10,10 +10,14 @@ import org.springframework.stereotype.Service;
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
 import com.deliverytech.delivery.dto.response.RestauranteResponse;
 import com.deliverytech.delivery.entity.Restaurante;
+import com.deliverytech.delivery.entity.Usuario;
 import com.deliverytech.delivery.exception.EntityNotFoundException;
+import com.deliverytech.delivery.exception.ValidationException;
 import com.deliverytech.delivery.mapper.RestauranteMapper;
 import com.deliverytech.delivery.repository.RestauranteRepository;
+import com.deliverytech.delivery.security.SecurityUtils;
 import com.deliverytech.delivery.service.RestauranteService;
+import com.deliverytech.delivery.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,8 +25,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RestauranteServiceImpl implements RestauranteService {
 
+    private final AuthService authService;
+
     private final RestauranteRepository restauranteRepository;
     private final RestauranteMapper mapper;
+
 
     @Override
     public RestauranteResponse cadastrarRestaurante(RestauranteRequest request) {
@@ -39,6 +46,13 @@ public class RestauranteServiceImpl implements RestauranteService {
 
     @Override
     public RestauranteResponse atualizarRestaurante(Long id, RestauranteRequest request) {
+        authService.getUsuarioAutenticado();
+        
+        // Só admin ou dono do restaurante podem atualizar
+        if (!SecurityUtils.hasRole("ADMIN") && !isOwner(id)) {
+            throw new ValidationException("Você não tem permissão para atualizar este restaurante");
+        }
+
         Restaurante restaurante = buscarOuLancar(id);
 
         restaurante.setNome(request.getNome());
@@ -49,6 +63,7 @@ public class RestauranteServiceImpl implements RestauranteService {
 
         return mapper.toResponse(restauranteRepository.save(restaurante));
     }
+
 
     @Override
     public List<RestauranteResponse> buscarRestaurantesPorCategoria(String categoria) {
@@ -87,6 +102,12 @@ public class RestauranteServiceImpl implements RestauranteService {
 
    @Override
     public RestauranteResponse alterarStatusRestaurante(Long id) {
+        authService.getUsuarioAutenticado();
+
+        if (!SecurityUtils.hasRole("ADMIN") && !isOwner(id)) {
+            throw new ValidationException("Você não tem permissão para alterar o status deste restaurante");
+        }
+
         Restaurante restaurante = buscarOuLancar(id);
         restaurante.setAtivo(!restaurante.getAtivo());
         restauranteRepository.save(restaurante);
@@ -121,4 +142,23 @@ public class RestauranteServiceImpl implements RestauranteService {
         return restauranteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado com ID: " + id));
     }
+
+    @Override
+    public boolean isOwner(Long restauranteId) {
+        Restaurante restaurante = buscarOuLancar(restauranteId);
+        Usuario logado = authService.getUsuarioAutenticado();
+        return restaurante.getUsuario() != null && restaurante.getUsuario().getId().equals(logado.getId());
+    }
+
+    public void removerRestaurante(Long id) {
+    authService.getUsuarioAutenticado();
+
+    if (!SecurityUtils.hasRole("ADMIN") && !isOwner(id)) {
+        throw new ValidationException("Você não tem permissão para remover este restaurante");
+    }
+
+    Restaurante restaurante = buscarOuLancar(id);
+    restauranteRepository.delete(restaurante);
+}
+
 }

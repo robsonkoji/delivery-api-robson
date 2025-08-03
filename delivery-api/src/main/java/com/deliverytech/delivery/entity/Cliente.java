@@ -24,6 +24,7 @@ public class Cliente {
     private String telefone;
     private String endereco;
     private boolean ativo;
+    private Usuario usuario;
 
     @OneToMany(mappedBy = "cliente", fetch = FetchType.LAZY)
     @JsonIgnore

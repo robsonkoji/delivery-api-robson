@@ -25,4 +25,6 @@ public interface ProdutoService {
 
     List<ProdutoResponse> buscarProdutosPorNome(String nome);
 
+    boolean isOwner(Long produtoId);
+
 }

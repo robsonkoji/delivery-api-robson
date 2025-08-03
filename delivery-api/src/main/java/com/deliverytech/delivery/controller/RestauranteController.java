@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -32,6 +33,7 @@ public class RestauranteController {
         this.restauranteService = restauranteService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Cadastrar um novo restaurante")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Restaurante criado com sucesso"),
@@ -91,6 +93,7 @@ public class RestauranteController {
         return ResponseEntity.ok(UtilsResponse.success(restaurantes));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANTE') and @restauranteService.isOwner(#id))")
     @Operation(summary = "Atualizar dados de um restaurante")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Restaurante atualizado com sucesso"),
@@ -109,6 +112,7 @@ public class RestauranteController {
         return ResponseEntity.ok(UtilsResponse.success(atualizado));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Ativar ou desativar um restaurante")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Status do restaurante alterado"),

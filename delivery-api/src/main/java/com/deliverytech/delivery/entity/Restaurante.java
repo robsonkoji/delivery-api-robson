@@ -63,7 +63,10 @@ public class Restaurante {
     @Column(name = "avaliacao")
     private BigDecimal avaliacao;
 
-  
+    @ManyToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+    
 
    
 

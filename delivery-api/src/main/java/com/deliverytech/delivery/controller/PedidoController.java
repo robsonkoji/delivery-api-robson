@@ -18,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -34,6 +35,7 @@ public class PedidoController {
 
     private final PedidoService pedidoService;
 
+    @PreAuthorize("hasRole('CLIENTE')")
     @PostMapping
     @Operation(summary = "Criar um novo pedido",
             responses = {
@@ -46,6 +48,7 @@ public class PedidoController {
                 UtilsResponse.created(response)
         );
     }
+
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar pedido por ID",
@@ -61,6 +64,7 @@ public class PedidoController {
         return ResponseEntity.ok(UtilsResponse.success(response));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     @Operation(summary = "Listar pedidos com filtros de status e data",
             parameters = {
@@ -92,6 +96,7 @@ public class PedidoController {
         return ResponseEntity.ok(UtilsResponse.success(pedidos));
     }
 
+    @PreAuthorize("hasRole('RESTAURANTE')")
     @PatchMapping("/{id}/status")
     @Operation(summary = "Atualizar o status do pedido")
     public ResponseEntity<ApiWrapperResponse<PedidoResponse>> atualizarStatus(
@@ -129,4 +134,6 @@ public class PedidoController {
         List<PedidoResponse> pedidos = pedidoService.buscarPedidosPorRestaurante(restauranteId);
         return ResponseEntity.ok(UtilsResponse.success(pedidos));
     }
+
+    
 }
