@@ -50,5 +50,6 @@ public class OpenApiConfig {
             )
             // Aplicação global do requisito de segurança
             .addSecurityItem(new SecurityRequirement().addList("bearerAuth"));
+            
     }
 }
