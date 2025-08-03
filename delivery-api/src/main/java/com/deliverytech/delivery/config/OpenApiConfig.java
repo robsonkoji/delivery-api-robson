@@ -28,8 +28,8 @@ public class OpenApiConfig {
                     .url("https://opensource.org/licenses/MIT"))
             )
             .servers(List.of(
-                new Server().url("https://api.deliverytech.com").description("Produção"),
-                new Server().url("http://localhost:8080").description("Desenvolvimento")
+                new Server().url("http://localhost:8080").description("Desenvolvimento"),
+                new Server().url("https://api.deliverytech.com").description("Produção")
             ))
             .tags(List.of(
                 new Tag().name("Clientes").description("Operações relacionadas aos clientes"),

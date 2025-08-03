@@ -31,7 +31,7 @@ public class WebConfig implements WebMvcConfigurer{
             @Override
             public void addCorsMappings(@NonNull CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:300") // Altere para seu domínio real
+                        .allowedOrigins("http://localhost:8080") // Altere para seu domínio real
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
                         .allowedHeaders("*");
             }
