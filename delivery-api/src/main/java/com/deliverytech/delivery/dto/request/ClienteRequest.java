@@ -6,8 +6,10 @@ import com.deliverytech.delivery.validation.ValidTelefone;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @Schema(description = "Objeto de requisição para cadastro de cliente")
 public class ClienteRequest {
 
@@ -46,5 +48,7 @@ public class ClienteRequest {
     this.email = email;
     this.telefone = telefone;
     this.endereco = endereco;
+
+
     }
 }

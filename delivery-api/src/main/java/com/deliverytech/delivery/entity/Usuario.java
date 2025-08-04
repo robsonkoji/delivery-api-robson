@@ -90,4 +90,6 @@ public class Usuario implements UserDetails {
     public boolean isEnabled() {
         return Boolean.TRUE.equals(ativo);
     }
+
+    
 }
