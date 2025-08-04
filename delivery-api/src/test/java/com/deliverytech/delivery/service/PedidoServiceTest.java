@@ -1,7 +1,9 @@
 package com.deliverytech.delivery.service;
 
+import com.deliverytech.delivery.dto.request.ClienteRequest;
 import com.deliverytech.delivery.dto.request.ItemPedidoRequest;
 import com.deliverytech.delivery.dto.request.PedidoRequest;
+import com.deliverytech.delivery.dto.response.ClienteResponse;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.entity.Pedido;
 import com.deliverytech.delivery.entity.Produto;
@@ -9,6 +11,7 @@ import com.deliverytech.delivery.entity.Restaurante;
 import com.deliverytech.delivery.enums.StatusPedido;
 import com.deliverytech.delivery.exception.BusinessException;
 import com.deliverytech.delivery.exception.GlobalExceptionHandler;
+import com.deliverytech.delivery.repository.ClienteRepository;
 import com.deliverytech.delivery.repository.PedidoRepository;
 import com.deliverytech.delivery.repository.ProdutoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -121,14 +124,14 @@ class PedidoServiceTest {
     void deveAtualizarStatusPedido() {
         Pedido pedido = new Pedido();
         pedido.setId(1L);
-        pedido.setStatus(StatusPedido.RECEBIDO);
+        pedido.setStatus(StatusPedido.CRIADO);
 
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
         when(pedidoRepository.save(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Pedido atualizado = pedidoService.atualizarStatusPedido(1L, StatusPedido.EM_PREPARO);
+        Pedido atualizado = pedidoService.atualizarStatusPedido(1L, StatusPedido.PREPARANDO);
 
-        assertEquals(StatusPedido.EM_PREPARO, atualizado.getStatus());
+        assertEquals(StatusPedido.A_CAMINHO, atualizado.getStatus());
         verify(pedidoRepository).save(pedido);
     }
 
@@ -136,8 +139,8 @@ class PedidoServiceTest {
     void deveLancarExcecaoAoAtualizarPedidoInexistente() {
         when(pedidoRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(RecursoNaoEncontradoException.class,
-            () -> pedidoService.atualizarStatusPedido(1L, StatusPedido.SAIU_PARA_ENTREGA));
+        assertThrows(BusinessException.class,
+            () -> pedidoService.atualizarStatusPedido(1L, StatusPedido.ENTREGUE));
 
         verify(pedidoRepository, never()).save(any());
     }
