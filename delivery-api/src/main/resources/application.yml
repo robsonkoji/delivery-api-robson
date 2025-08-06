@@ -1,0 +1,25 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, env
+  endpoint:
+    health:
+      show-details: always
+  health:
+    diskspace:
+      enabled: true
+      threshold: 100MB
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+
+info:
+  app:
+    name: Delivery API
+    description: API de entrega com Spring Boot
+    version: 1.0.0
