@@ -20,8 +20,10 @@ public class ProdutoMapper {
         produto.setNome(request.getNome());
         produto.setDescricao(request.getDescricao());
         produto.setPreco(request.getPreco());
+        produto.setCategoria(request.getCategoria());
         produto.setAtivo(request.getDisponivel());
         produto.setRestaurante(restaurante);
+        produto.setEstoque(request.getEstoque());
         return produto;
     }
 
@@ -33,6 +35,7 @@ public class ProdutoMapper {
         response.setPreco(produto.getPreco());
         response.setCategoria(produto.getCategoria());
         response.setDisponivel(produto.getAtivo());
+        response.setEstoque(produto.getEstoque());
         if (produto.getRestaurante() != null) {
             response.setRestauranteId(produto.getRestaurante().getId());
         }

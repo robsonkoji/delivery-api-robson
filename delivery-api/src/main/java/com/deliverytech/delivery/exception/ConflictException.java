@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Representa um erro HTTP 409 (Conflict).
  */
 @ResponseStatus(HttpStatus.CONFLICT)
-public final class ConflictException extends BusinessException {
+public final class ConflictException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 

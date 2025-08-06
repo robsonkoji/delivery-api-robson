@@ -47,6 +47,7 @@ public class ProdutoController {
                 .body(UtilsResponse.created(response));
     }
 
+    // Todos podem consultar o produto por id
     @Operation(summary = "Buscar produto por ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Produto encontrado"),
@@ -61,7 +62,8 @@ public class ProdutoController {
         return ResponseEntity.ok(UtilsResponse.success(response));
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @produtoService.isOwner(#id)")
+    // Atualizar só admin ou dono do produto
+    @PreAuthorize("hasRole('ADMIN') or @produtoService.isOwner(#id, principal.id)")
     @Operation(summary = "Atualizar um produto existente")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Produto atualizado com sucesso"),
@@ -80,7 +82,8 @@ public class ProdutoController {
         return ResponseEntity.ok(UtilsResponse.success(response));
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @produtoService.isOwner(#id)")
+    // Remover só admin ou dono do produto
+    @PreAuthorize("hasRole('ADMIN') or @produtoService.isOwner(#id, principal.id)")
     @Operation(summary = "Remover produto por ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Produto removido com sucesso"),
@@ -95,7 +98,8 @@ public class ProdutoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @produtoServiceImpl.isOwner(#id)")
+    // Alterar disponibilidade só admin ou dono do produto
+    @PreAuthorize("hasRole('ADMIN') or @produtoService.isOwner(#id, principal.id)")
     @Operation(summary = "Alterar disponibilidade de um produto")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Disponibilidade alterada com sucesso"),
@@ -113,6 +117,7 @@ public class ProdutoController {
         return ResponseEntity.ok(UtilsResponse.success(response));
     }
 
+    // Listagens são públicas
     @Operation(summary = "Listar produtos por categoria")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Produtos encontrados para a categoria"),

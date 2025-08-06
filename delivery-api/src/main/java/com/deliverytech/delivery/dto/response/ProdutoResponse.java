@@ -28,4 +28,6 @@ public class ProdutoResponse {
 
     @Schema(description = "ID do restaurante associado", example = "1")
     private Long restauranteId;
+
+    private int estoque;
 }

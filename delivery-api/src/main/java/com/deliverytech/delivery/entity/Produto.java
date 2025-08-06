@@ -63,4 +63,16 @@ public class Produto {
     public void setAtivo(Boolean ativo) {
         this.disponivel = ativo;
     }
+
+    private int estoque;
+
+    // Getter
+    public int getEstoque() {
+        return estoque;
+    }
+
+    // Setter (implemente assim)
+    public void setEstoque(int estoque) {
+        this.estoque = estoque;
+    }
 }

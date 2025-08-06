@@ -44,12 +44,13 @@ public class PedidoController {
             })
     public ResponseEntity<ApiWrapperResponse<PedidoResponse>> criarPedido(@Valid @RequestBody PedidoRequest request) {
         PedidoResponse response = pedidoService.criarPedido(request);
-        return ResponseEntity.ok(
-                UtilsResponse.created(response)
-        );
+        return ResponseEntity.ok(UtilsResponse.created(response));
     }
 
-
+    // Apenas ADMIN, RESTAURANTE dono do pedido ou CLIENTE dono do pedido pode acessar
+    @PreAuthorize("hasRole('ADMIN') or " +
+                  "(hasRole('CLIENTE') and @pedidoSecurity.isPedidoDoCliente(#id, principal.id)) or " +
+                  "(hasRole('RESTAURANTE') and @pedidoSecurity.isPedidoDoRestaurante(#id, principal.id))")
     @GetMapping("/{id}")
     @Operation(summary = "Buscar pedido por ID",
             parameters = {
@@ -96,7 +97,7 @@ public class PedidoController {
         return ResponseEntity.ok(UtilsResponse.success(pedidos));
     }
 
-    @PreAuthorize("hasRole('RESTAURANTE')")
+    @PreAuthorize("hasRole('RESTAURANTE') and @pedidoSecurity.isPedidoDoRestaurante(#id, principal.id)")
     @PatchMapping("/{id}/status")
     @Operation(summary = "Atualizar o status do pedido")
     public ResponseEntity<ApiWrapperResponse<PedidoResponse>> atualizarStatus(
@@ -107,6 +108,7 @@ public class PedidoController {
         return ResponseEntity.ok(UtilsResponse.success(response));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and @pedidoSecurity.isPedidoDoCliente(#id, principal.id))")
     @DeleteMapping("/{id}")
     @Operation(summary = "Cancelar um pedido por ID")
     public ResponseEntity<Void> cancelarPedido(@PathVariable Long id) {
@@ -114,6 +116,7 @@ public class PedidoController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasRole('CLIENTE')")
     @PostMapping("/calcular")
     @Operation(summary = "Calcular o total do pedido sem salvar")
     public ResponseEntity<ApiWrapperResponse<BigDecimal>> calcularTotal(@Valid @RequestBody List<ItemPedidoRequest> itens) {
@@ -121,6 +124,7 @@ public class PedidoController {
         return ResponseEntity.ok(UtilsResponse.success(total));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and #clienteId == principal.id)")
     @GetMapping("/clientes/{clienteId}")
     @Operation(summary = "Histórico de pedidos de um cliente")
     public ResponseEntity<ApiWrapperResponse<List<PedidoResponse>>> buscarPorCliente(@PathVariable Long clienteId) {
@@ -128,12 +132,11 @@ public class PedidoController {
         return ResponseEntity.ok(UtilsResponse.success(pedidos));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANTE') and #restauranteId == principal.id)")
     @GetMapping("/restaurantes/{restauranteId}")
     @Operation(summary = "Pedidos de um restaurante")
     public ResponseEntity<ApiWrapperResponse<List<PedidoResponse>>> buscarPorRestaurante(@PathVariable Long restauranteId) {
         List<PedidoResponse> pedidos = pedidoService.buscarPedidosPorRestaurante(restauranteId);
         return ResponseEntity.ok(UtilsResponse.success(pedidos));
     }
-
-    
 }

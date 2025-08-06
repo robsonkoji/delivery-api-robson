@@ -1,8 +1,11 @@
-package com.deliverytech.delivery.dto.response.common;
+package com.deliverytech.delivery.exception;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import lombok.Data;
+
+@Data
 public class ErrorResponse {
 
     private LocalDateTime timestamp;

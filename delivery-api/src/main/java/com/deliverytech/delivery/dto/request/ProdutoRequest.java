@@ -41,4 +41,6 @@ public class ProdutoRequest {
     @NotNull(message = "ID do restaurante é obrigatório")
     @Schema(description = "Identificador do restaurante ao qual o produto pertence", example = "1")
     private Long restauranteId;
+
+    private int estoque;
 }

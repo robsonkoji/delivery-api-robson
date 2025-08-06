@@ -94,15 +94,16 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Override
     public PedidoResponse buscarPedidoPorId(Long id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com ID: " + id));
+
         if (!canAccess(id)) {
             throw new BusinessException("Você não tem permissão para visualizar este pedido.");
         }
 
-        Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
-
         return mapper.toResponse(pedido);
     }
+
 
    @Override
     public List<PedidoResponse> buscarPedidosPorCliente(Long clienteId) {
@@ -133,7 +134,7 @@ public class PedidoServiceImpl implements PedidoService {
     public BigDecimal calcularTotalPedido(List<ItemPedidoRequest> itensRequest) {
         return itensRequest.stream().map(itemDto -> {
             Produto produto = produtoRepository.findById(itemDto.getProdutoId())
-                    .orElseThrow(() -> new BusinessException("Produto não encontrado"));
+                    .orElseThrow(() -> new EntityNotFoundException("Produto não encontrado"));
             return produto.getPreco().multiply(BigDecimal.valueOf(itemDto.getQuantidade()));
         }).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
