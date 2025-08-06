@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Esta exceção herda de BusinessException e indica erro 400 (Bad Request).
  */
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public final class ValidationException extends BusinessException {
+public final class ValidationException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 

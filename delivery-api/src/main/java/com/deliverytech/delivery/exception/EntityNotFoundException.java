@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * Essa exceção herda de BusinessException para manter a hierarquia de exceções de negócio.
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public final class EntityNotFoundException extends BusinessException {
+public final class EntityNotFoundException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 

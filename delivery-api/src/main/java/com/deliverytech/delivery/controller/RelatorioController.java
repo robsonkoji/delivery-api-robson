@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -27,6 +28,8 @@ public class RelatorioController {
 
     private final RelatorioService relatorioService;
 
+    // Só ADMIN pode acessar
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
         summary = "Relatório de vendas por restaurante",
         description = "Retorna uma lista de vendas agrupadas por restaurante",
@@ -42,6 +45,8 @@ public class RelatorioController {
         return ResponseEntity.ok(relatorioService.obterVendasPorRestaurante());
     }
 
+    // Só ADMIN pode acessar
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
         summary = "Produtos mais vendidos",
         description = "Retorna os produtos mais vendidos",
@@ -57,6 +62,8 @@ public class RelatorioController {
         return ResponseEntity.ok(relatorioService.obterProdutosMaisVendidos());
     }
 
+    // Só ADMIN pode acessar
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
         summary = "Clientes mais ativos",
         description = "Retorna os clientes com maior número de pedidos",
@@ -72,6 +79,8 @@ public class RelatorioController {
         return ResponseEntity.ok(relatorioService.obterClientesMaisAtivos());
     }
 
+    // Só ADMIN pode acessar
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(
         summary = "Pedidos por período",
         description = "Retorna um resumo dos pedidos feitos entre duas datas",

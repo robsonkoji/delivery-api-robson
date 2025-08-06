@@ -55,6 +55,16 @@ public class Usuario implements UserDetails {
     @Schema(description = "ID do restaurante vinculado ao usuário, se aplicável", example = "2")
     private Long restauranteId;
 
+    @PrePersist
+    public void prePersist() {
+        if (dataCriacao == null) {
+            dataCriacao = LocalDateTime.now();
+        }
+        if (ativo == null) {
+            ativo = true; // ou false, conforme seu padrão
+        }
+    }
+
     // Implementação do contrato UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -90,6 +100,4 @@ public class Usuario implements UserDetails {
     public boolean isEnabled() {
         return Boolean.TRUE.equals(ativo);
     }
-
-    
 }

@@ -1,6 +1,8 @@
 package com.deliverytech.delivery.repository;
 
 import com.deliverytech.delivery.entity.Cliente;
+import com.deliverytech.delivery.entity.Usuario;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -21,5 +23,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     Optional<Cliente> findByEmailAndAtivoFalse(String email);
     List<Cliente> findByTelefoneContainingAndAtivoTrue(String telefone);
     List<Cliente> findByEnderecoContainingAndAtivoTrue(String endereco);
+    Optional<Cliente> findByUsuario(Usuario usuario);
 
 }

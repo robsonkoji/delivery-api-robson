@@ -33,6 +33,7 @@ public class RestauranteController {
         this.restauranteService = restauranteService;
     }
 
+    // Somente ADMIN pode cadastrar restaurante
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Cadastrar um novo restaurante")
     @ApiResponses(value = {
@@ -50,6 +51,7 @@ public class RestauranteController {
                 .body(UtilsResponse.created(restaurante));
     }
 
+    // Consulta restaurante por id é público
     @Operation(summary = "Buscar restaurante por ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Restaurante encontrado"),
@@ -64,6 +66,7 @@ public class RestauranteController {
         return ResponseEntity.ok(UtilsResponse.success(restaurante));
     }
 
+    // Listagem com filtros é pública
     @Operation(summary = "Listar restaurantes com filtros")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de restaurantes retornada")
@@ -80,6 +83,7 @@ public class RestauranteController {
         return ResponseEntity.ok(UtilsResponse.success(restaurantes));
     }
 
+    // Listar por categoria também público
     @Operation(summary = "Listar restaurantes por categoria")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de restaurantes retornada")
@@ -93,7 +97,8 @@ public class RestauranteController {
         return ResponseEntity.ok(UtilsResponse.success(restaurantes));
     }
 
-    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANTE') and @restauranteService.isOwner(#id))")
+    // Atualizar restaurante — somente ADMIN ou dono (RESTAURANTE) podem atualizar
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('RESTAURANTE') and @restauranteService.isOwner(#id, principal.id))")
     @Operation(summary = "Atualizar dados de um restaurante")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Restaurante atualizado com sucesso"),
@@ -112,6 +117,7 @@ public class RestauranteController {
         return ResponseEntity.ok(UtilsResponse.success(atualizado));
     }
 
+    // Alterar status — somente ADMIN pode
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Ativar ou desativar um restaurante")
     @ApiResponses(value = {
@@ -127,6 +133,7 @@ public class RestauranteController {
         return ResponseEntity.ok(UtilsResponse.success(response));
     }
 
+    // Calcular taxa de entrega — público
     @Operation(summary = "Calcular taxa de entrega para um restaurante com base no CEP")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Taxa de entrega calculada"),
@@ -145,6 +152,7 @@ public class RestauranteController {
         return ResponseEntity.ok(UtilsResponse.success(taxaEntrega));
     }
 
+    // Listar restaurantes próximos — público
     @Operation(summary = "Listar restaurantes próximos com base no CEP")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de restaurantes próximos retornada"),

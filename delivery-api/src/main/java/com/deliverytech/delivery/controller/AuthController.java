@@ -9,14 +9,12 @@ import com.deliverytech.delivery.security.JwtUtil;
 import com.deliverytech.delivery.service.UsuarioService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +26,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api/auth")
 @Tag(name = "Autenticação", description = "Operações para login, registro e informações do usuário autenticado")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -44,21 +42,15 @@ public class AuthController {
         this.usuarioService = usuarioService;
     }
 
-    @PostMapping("/login")
+
     @Operation(
         summary = "Autentica usuário e gera token JWT",
-        description = "Realiza autenticação usando email e senha, retornando um token JWT para uso nas chamadas autenticadas.",
-        requestBody = @RequestBody(
-            description = "Credenciais para autenticação",
-            required = true,
-            content = @Content(schema = @Schema(implementation = AuthRequest.class))
-        ),
-        responses = {
-            @ApiResponse(responseCode = "200", description = "Autenticação bem sucedida",
-                content = @Content(schema = @Schema(implementation = AuthResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Credenciais inválidas", content = @Content)
-        }
-    )
+        description = "Realiza autenticação usando email e senha, retornando um token JWT para uso nas chamadas autenticadas.")
+        @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Autenticação bem sucedida"),
+            @ApiResponse(responseCode = "401", description = "Credenciais inválidas")
+        })
+    @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -84,20 +76,14 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/register")
     @Operation(
         summary = "Registra um novo usuário",
-        description = "Cria um novo usuário com os dados fornecidos, se o email ainda não estiver cadastrado.",
-        requestBody = @RequestBody(
-            description = "Dados para registro de usuário",
-            content = @Content(schema = @Schema(implementation = RegisterRequest.class))
-        ),
-        responses = {
-            @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso",
-                content = @Content(schema = @Schema(implementation = UserResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Email já cadastrado", content = @Content)
-        }
-    )
+        description = "Cria um novo usuário com os dados fornecidos, se o email ainda não estiver cadastrado.")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Email já cadastrado")
+        })
+    @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
         if (usuarioService.existsByEmail(request.getEmail())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email já cadastrado");
@@ -115,18 +101,15 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/me")
     @Operation(
         summary = "Obtém informações do usuário autenticado",
-        description = "Retorna dados básicos do usuário autenticado pelo token JWT.",
-        responses = {
-            @ApiResponse(responseCode = "200", description = "Usuário autenticado",
-                content = @Content(schema = @Schema(implementation = UserResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Usuário não autenticado", content = @Content)
-        },
-        security = @SecurityRequirement(name = "bearerAuth")
-    )
-    @SecurityRequirement(name = "bearerAuth")  // Para aplicar segurança no Swagger UI
+        description = "Retorna dados básicos do usuário autenticado pelo token JWT.")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuário autenticado"),
+            @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
+        })
+    @GetMapping("/me")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<UserResponse> me(@AuthenticationPrincipal Usuario usuario) {
         if (usuario == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado");

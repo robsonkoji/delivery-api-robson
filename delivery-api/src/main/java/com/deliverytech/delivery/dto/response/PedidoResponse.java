@@ -17,6 +17,7 @@ public class PedidoResponse {
     private Long id;
 
     private ClienteResponse cliente;
+    private RestauranteResponse restaurante; 
 
     @Schema(example = "10")
     private Long restauranteId;

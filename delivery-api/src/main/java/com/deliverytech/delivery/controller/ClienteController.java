@@ -52,6 +52,7 @@ public class ClienteController {
                 .body(UtilsResponse.created(response));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     @GetMapping("/{id}")
     @Operation(summary = "Buscar cliente por ID")
     @ApiResponse(responseCode = "200", description = "Cliente encontrado",
@@ -64,6 +65,7 @@ public class ClienteController {
     return ResponseEntity.ok(UtilsResponse.success(response));
 }
 
+    @PreAuthorize("hasRole('ADMIN') or #email == principal.email")
     @GetMapping("/email")
     @Operation(summary = "Buscar cliente por e-mail")
     @ApiResponse(responseCode = "200", description = "Cliente encontrado",
@@ -75,6 +77,7 @@ public class ClienteController {
         return ResponseEntity.ok(UtilsResponse.success(mapper.toResponse(cliente)));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar cliente")
     @ApiResponse(responseCode = "200", description = "Cliente atualizado",
@@ -97,6 +100,7 @@ public class ClienteController {
         return ResponseEntity.ok(UtilsResponse.success(mapper.toResponse(cliente)));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/ativos")
     @Operation(summary = "Listar todos os clientes ativos")
     @ApiResponse(responseCode = "200", description = "Clientes ativos listados",
@@ -107,6 +111,7 @@ public class ClienteController {
         return ResponseEntity.ok(UtilsResponse.success(responses));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     @Operation(summary = "Listar todos os clientes")
     @ApiResponse(responseCode = "200", description = "Lista de clientes",
@@ -117,6 +122,7 @@ public class ClienteController {
         return ResponseEntity.ok(UtilsResponse.success(responses));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/nome")
     @Operation(summary = "Buscar clientes por nome")
     @ApiResponse(responseCode = "200", description = "Clientes encontrados",
@@ -128,6 +134,7 @@ public class ClienteController {
         return ResponseEntity.ok(UtilsResponse.success(responses));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/buscar-por-telefone")
     @Operation(summary = "Buscar clientes por telefone")
     @ApiResponse(responseCode = "200", description = "Clientes encontrados",
@@ -139,6 +146,7 @@ public class ClienteController {
         return ResponseEntity.ok(UtilsResponse.success(responses));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/buscar-por-endereco")
     @Operation(summary = "Buscar clientes por endereço")
     @ApiResponse(responseCode = "200", description = "Clientes encontrados",

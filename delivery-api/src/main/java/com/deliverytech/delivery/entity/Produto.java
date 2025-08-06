@@ -64,8 +64,15 @@ public class Produto {
         this.disponivel = ativo;
     }
 
-    public void setEstoque(int i) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setEstoque'");
+    private int estoque;
+
+    // Getter
+    public int getEstoque() {
+        return estoque;
+    }
+
+    // Setter (implemente assim)
+    public void setEstoque(int estoque) {
+        this.estoque = estoque;
     }
 }
