@@ -54,6 +54,7 @@ public class SecurityConfig {
                     "/",
                     "/index.html",
                     "/static/**",
+                    "/actuator/prometheus",
                     "/actuator/info",
                     "/favicon.ico"
                 ).permitAll()

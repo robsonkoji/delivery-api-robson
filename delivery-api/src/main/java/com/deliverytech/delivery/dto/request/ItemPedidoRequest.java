@@ -1,5 +1,7 @@
 package com.deliverytech.delivery.dto.request;
 
+import java.math.BigDecimal;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +10,9 @@ import lombok.Data;
 @Data
 @Schema(description = "Item de um pedido, contendo produto e quantidade")
 public class ItemPedidoRequest {
+
+    @Schema(description = "Preço unitário do produto no momento do pedido", example = "19.90")
+    private BigDecimal precoUnitario;
     
     @NotNull(message = "ID do produto é obrigatório")
     @Schema(description = "ID do produto selecionado", example = "1")

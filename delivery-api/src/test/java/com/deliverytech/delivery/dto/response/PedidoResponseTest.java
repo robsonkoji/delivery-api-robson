@@ -22,7 +22,7 @@ class PedidoResponseTest {
         Long restauranteId = 10L;
         String enderecoEntrega = "Av. Paulista, 1000 - CEP 01310-100";
         String observacoes = "Sem cebola, por favor";
-        StatusPedido status = StatusPedido.CRIADO;
+        StatusPedido status = StatusPedido.PENDENTE;
         LocalDateTime dataPedido = LocalDateTime.of(2025, 8, 2, 13, 0);
         BigDecimal taxaEntrega = new BigDecimal("7.50");
         BigDecimal total = new BigDecimal("57.40");

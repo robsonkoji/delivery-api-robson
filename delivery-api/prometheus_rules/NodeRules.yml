@@ -1,0 +1,52 @@
+groups:
+  - name: node-alerts
+    rules:
+      # Uso alto de CPU (mais que 90% no total)
+      - alert: NodeHighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Uso de CPU alto no nó"
+          description: "A CPU está com uso acima de 90% nos últimos 5 minutos."
+
+      # Uso alto de memória (mais que 85%)
+      - alert: NodeHighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Uso de memória alto no nó"
+          description: "Mais de 85% da memória total está em uso."
+
+      # Espaço em disco baixo (menos de 10% disponível na partição /)
+      - alert: NodeDiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pouco espaço em disco no nó"
+          description: "Menos de 10% do espaço em disco disponível na partição raiz (/)."
+
+      # Alta taxa de erros no sistema de arquivos (exemplo: I/O erros)
+      - alert: NodeDiskIOErrors
+        expr: increase(node_disk_io_time_seconds_total[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Possíveis problemas de disco no nó"
+          description: "Aumento significativo no tempo de I/O no disco detectado."
+
+      # Alta carga de sistema (load average maior que número de CPUs)
+      - alert: NodeHighLoad
+        expr: node_load1 > count(node_cpu_seconds_total{mode="idle"}) by (instance)
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Carga alta no nó"
+          description: "Carga média do sistema maior que o número de CPUs disponíveis."

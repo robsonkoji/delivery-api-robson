@@ -1,0 +1,45 @@
+version: '3.8'
+
+networks:
+  default:
+    driver: bridge
+    
+services:
+  delivery-api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+    restart: unless-stopped
+    
+
+
+  prometheus:
+    image: prom/prometheus:latest # Imagem oficial do Prometheus
+    container_name: prometheus # Nome do contêiner
+    restart: unless-stopped # Reinicia o contêiner automaticamente a menos que seja parado manualmente
+    ports:
+      - "9090:9090" # Mapeia a porta 9090 do host para a porta 9090 do contêiner
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus_rules/:/etc/prometheus/prometheus_rules/ # Monta o arquivo de configuração
+      - prometheus_data:/prometheus # Monta o volume para persistir os dados do Prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml' # Especifica o arquivo de configuração
+      - '--storage.tsdb.path=/prometheus' # Especifica o caminho para o armazenamento de dados
+
+      # Define o volume nomeado para os dados do Prometheus
+
+  grafana: # Nome do serviço
+    image: grafana/grafana-oss:latest # Imagem do Grafana (pode especificar uma versão, ex: 10.4.2)
+    container_name: grafana # Nome do contêiner
+    restart: unless-stopped # Reinicia o contêiner automaticamente a menos que seja parado manualmente
+    ports:
+      - "3000:3000" # Mapeia a porta 3000 do host para a porta 3000 do contêiner
+    volumes:
+      - grafana-data:/var/lib/grafana # Monta o volume para persistir os dados do Grafana
+
+volumes:
+  grafana-data: # Define o volume nomeado para os dados do Grafana
+  prometheus_data: 

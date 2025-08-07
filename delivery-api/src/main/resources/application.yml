@@ -2,8 +2,11 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info, metrics, env
+        include: health, info, metrics, prometheus
+
   endpoint:
+    prometheus:
+      access: UNRESTRICTED
     health:
       show-details: always
   health:
@@ -13,10 +16,16 @@ management:
 
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:mem:deliverydb
     driverClassName: org.h2.Driver
     username: sa
     password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
 
 info:
   app:

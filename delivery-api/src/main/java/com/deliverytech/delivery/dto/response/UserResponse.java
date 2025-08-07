@@ -7,11 +7,20 @@ public class UserResponse {
     private String email;
     private String role;
 
-    public UserResponse(Long id, String nome, String email, String role) {
+    private UserResponse() {
+        // Construtor privado para frameworks (ex: Jackson)
+    }
+
+    private UserResponse(Long id, String nome, String email, String role) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.role = role;
+    }
+
+    // Método estático de fábrica para criar a instância
+    public static UserResponse of(Long id, String nome, String email, String role) {
+        return new UserResponse(id, nome, email, role);
     }
 
     // Getters e setters

@@ -1,0 +1,101 @@
+groups:
+  - name: jvm-alerts
+    rules:
+      # Alerta quando uso do heap ultrapassa 80%
+      - alert: JVMHeapUsageHigh
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.8
+        for: 2m
+        labels:
+          severity: critical
+          job: spring-boot-app
+        annotations:
+          summary: "Uso de heap JVM alto (acima de 80%)"
+          description: "Heap JVM está usando mais de 80% da capacidade máxima de {{ $labels.instance }} (job={{ $labels.job }})."
+
+      # Alerta quando uso do non-heap ultrapassa 80%
+      - alert: JVMNonHeapUsageHigh
+        expr: jvm_memory_used_bytes{area="nonheap"} / jvm_memory_max_bytes{area="nonheap"} > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          job: spring-boot-app
+        annotations:
+          summary: "Uso de memória non-heap JVM alto (acima de 80%)"
+          description: "Memória non-heap JVM está acima de 80% da capacidade."
+
+      # Alerta para número alto de threads vivas (exemplo: mais que 300)
+      - alert: JVMHighThreads
+        expr: jvm_threads_live_threads > 300
+        for: 2m
+        labels:
+          severity: warning
+          job: spring-boot-app
+        annotations:
+          summary: "Número de threads vivas JVM elevado"
+          description: "Há mais de 300 threads vivas rodando na JVM."
+
+      # Alerta para número alto de garbage collections em curto período (exemplo: > 10 em 5 minutos)
+      - alert: JVMHighGarbageCollection
+        expr: increase(jvm_gc_pause_seconds_sum[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          job: spring-boot-app
+        annotations:
+          summary: "Muitas pausas por Garbage Collection na JVM"
+          description: "A JVM teve mais de 10 segundos totais de pausa por GC nos últimos 5 minutos."
+
+      # Alerta para uso alto de CPU da JVM (exemplo: mais que 80%)
+      - alert: JVMHighCpuUsage
+        expr: process_cpu_usage > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          job: spring-boot-app
+        annotations:
+          summary: "Uso elevado de CPU pela JVM"
+          description: "Uso de CPU pela JVM está acima de 80%."
+
+  - name: http-throughput-alerts
+    rules:
+      - alert: HttpThroughputTooHigh
+        expr: sum(rate(http_server_requests_seconds_count[1m])) > 100
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Throughput HTTP muito alto"
+          description: "A aplicação está processando mais de 100 requisições por segundo."
+
+      - alert: HttpThroughputTooLow
+        expr: sum(rate(http_server_requests_seconds_count[1m])) < 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Throughput HTTP muito baixo"
+          description: "A aplicação está com menos de 0.1 req/s, pode estar inativa ou com problemas."
+
+  - name: http-error-alerts
+    rules:
+      - alert: HighHttp5xxErrorRate
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[1m])) > 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+           summary: "Alta taxa de erro HTTP 5xx"
+           description: "Mais de 1 erro 5xx por segundo nos últimos 2 minutos."
+
+      - alert: HighErrorRate
+        expr: (
+          sum(rate(http_server_requests_seconds_count{status=~"5.."}[1m]))
+          /
+          sum(rate(http_server_requests_seconds_count[1m]))
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Erro rate acima de 5%"
+          description: "Mais de 5% das requisições retornaram erro 5xx nos últimos 2 minutos."

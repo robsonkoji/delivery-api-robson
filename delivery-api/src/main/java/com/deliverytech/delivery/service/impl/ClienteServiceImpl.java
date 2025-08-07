@@ -11,30 +11,54 @@ import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ClienteRepository;
 import com.deliverytech.delivery.service.ClienteService;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.Gauge;
+
 @Service
 public class ClienteServiceImpl implements ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private final MeterRegistry meterRegistry;
 
-    public ClienteServiceImpl(ClienteRepository clienteRepository) {
+    public ClienteServiceImpl(ClienteRepository clienteRepository, MeterRegistry meterRegistry) {
         this.clienteRepository = clienteRepository;
+        this.meterRegistry = meterRegistry;
+
+        Gauge.builder("clientes.ativos.total", this, ClienteServiceImpl::contarClientesAtivos)
+             .description("Número de clientes ativos")
+             .register(meterRegistry);
     }
 
-    @Override
+   @Override
     public Cliente cadastrarCliente(ClienteRequest request) {
-        if (clienteRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("Cliente com email já cadastrado");
+        Timer.Sample sample = Timer.start(meterRegistry);
+
+        try {
+            if (clienteRepository.existsByEmail(request.getEmail())) {
+                throw new BusinessException("Cliente com email já cadastrado");
+            }
+
+            Cliente cliente = new Cliente();
+            cliente.setNome(request.getNome());
+            cliente.setEmail(request.getEmail());
+            cliente.setTelefone(request.getTelefone());
+            cliente.setEndereco(request.getEndereco());
+            cliente.setAtivo(true);
+
+            Cliente salvo = clienteRepository.save(cliente);
+            meterRegistry.counter("clientes.cadastrados.total").increment();
+
+            return salvo;
+        } finally {
+            sample.stop(meterRegistry.timer("clientes.cadastro.tempo"));
         }
-
-        Cliente cliente = new Cliente();
-        cliente.setNome(request.getNome());
-        cliente.setEmail(request.getEmail());
-        cliente.setTelefone(request.getTelefone());
-        cliente.setEndereco(request.getEndereco());
-        cliente.setAtivo(true);
-
-        return clienteRepository.save(cliente);
     }
+
+    private double contarClientesAtivos() {
+        return clienteRepository.countByAtivoTrue();
+    }
+    
 
     @Override
     public Cliente buscarClientePorId(Long id) {

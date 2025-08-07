@@ -8,6 +8,7 @@ import com.deliverytech.delivery.dto.response.common.ApiWrapperResponse;
 import com.deliverytech.delivery.dto.response.common.UtilsResponse;
 import com.deliverytech.delivery.service.PedidoService;
 
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -36,6 +37,7 @@ public class PedidoController {
     private final PedidoService pedidoService;
 
     @PreAuthorize("hasRole('CLIENTE')")
+    @Timed(value = "pedido.criar.tempo", description = "Tempo para criar pedido")
     @PostMapping
     @Operation(summary = "Criar um novo pedido",
             responses = {

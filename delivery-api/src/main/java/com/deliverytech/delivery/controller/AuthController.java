@@ -5,6 +5,9 @@ import com.deliverytech.delivery.dto.request.RegisterRequest;
 import com.deliverytech.delivery.dto.response.AuthResponse;
 import com.deliverytech.delivery.dto.response.UserResponse;
 import com.deliverytech.delivery.entity.Usuario;
+import com.deliverytech.delivery.mapper.UsuarioMapper;
+import com.deliverytech.delivery.metrics.UsuarioAtivoMetrics;
+import com.deliverytech.delivery.security.JwtTokenBlacklist;
 import com.deliverytech.delivery.security.JwtUtil;
 import com.deliverytech.delivery.service.UsuarioService;
 
@@ -12,9 +15,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
+import java.time.Instant;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,13 +38,20 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final UsuarioService usuarioService;
+    private final UsuarioAtivoMetrics usuarioAtivoMetrics;
+    private final JwtTokenBlacklist jwtTokenBlacklist;
+
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtUtil jwtUtil,
-                          UsuarioService usuarioService) {
+                          UsuarioService usuarioService,
+                          UsuarioAtivoMetrics usuarioAtivoMetrics,
+                          JwtTokenBlacklist jwtTokenBlacklist) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.usuarioService = usuarioService;
+        this.usuarioAtivoMetrics = usuarioAtivoMetrics;
+        this.jwtTokenBlacklist = jwtTokenBlacklist;
     }
 
 
@@ -60,6 +72,9 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             Usuario usuario = (Usuario) authentication.getPrincipal();
 
+            // MÉTRICA: adiciona usuário ativo
+            usuarioAtivoMetrics.registrarLogin(usuario.getId().toString());
+
             String token = jwtUtil.generateToken(usuario);
 
             AuthResponse response = new AuthResponse(
@@ -78,11 +93,12 @@ public class AuthController {
 
     @Operation(
         summary = "Registra um novo usuário",
-        description = "Cria um novo usuário com os dados fornecidos, se o email ainda não estiver cadastrado.")
-        @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
-            @ApiResponse(responseCode = "400", description = "Email já cadastrado")
-        })
+        description = "Cria um novo usuário com os dados fornecidos, se o email ainda não estiver cadastrado."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso"),
+        @ApiResponse(responseCode = "400", description = "Email já cadastrado")
+    })
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
         if (usuarioService.existsByEmail(request.getEmail())) {
@@ -91,12 +107,7 @@ public class AuthController {
 
         Usuario novoUsuario = usuarioService.registrarUsuario(request);
 
-        UserResponse response = new UserResponse(
-                novoUsuario.getId(),
-                novoUsuario.getNome(),
-                novoUsuario.getEmail(),
-                novoUsuario.getRole().name()
-        );
+        UserResponse response = UsuarioMapper.toResponse(novoUsuario);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -115,13 +126,32 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Usuário não autenticado");
         }
 
-        UserResponse response = new UserResponse(
-                usuario.getId(),
-                usuario.getNome(),
-                usuario.getEmail(),
-                usuario.getRole().name()
-        );
+        UserResponse response = UsuarioMapper.toResponse(usuario);
+
 
         return ResponseEntity.ok(response);
     }
+
+    @Operation(
+        summary = "Logout",
+        description = "Invalida a sessão do usuário (remove da métrica de usuários ativos e coloca o token na blacklist)"
+    )
+    @PostMapping("/logout")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Void> logout(HttpServletRequest request,
+                                       @AuthenticationPrincipal Usuario usuario) {
+        if (usuario != null) {
+            usuarioAtivoMetrics.registrarLogout(usuario.getId().toString());
+        }
+
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            Instant expiration = jwtUtil.getExpirationInstant(token);
+            jwtTokenBlacklist.add(token, expiration);
+        }
+
+        return ResponseEntity.noContent().build();
+    }
+
 }

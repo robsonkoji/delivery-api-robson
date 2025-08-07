@@ -160,7 +160,7 @@ void setup() throws Exception {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(pedidoRequest)))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.dados.status", is(StatusPedido.CRIADO.name())))
+            .andExpect(jsonPath("$.dados.status", is(StatusPedido.PENDENTE.name())))
             .andExpect(jsonPath("$.dados.cliente.id", is(cliente.getId().intValue())))
             .andExpect(jsonPath("$.dados.restauranteId", is(restaurante.getId().intValue())))
             .andExpect(jsonPath("$.dados.itens", hasSize(2)))

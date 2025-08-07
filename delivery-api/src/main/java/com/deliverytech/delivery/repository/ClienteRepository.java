@@ -24,5 +24,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     List<Cliente> findByTelefoneContainingAndAtivoTrue(String telefone);
     List<Cliente> findByEnderecoContainingAndAtivoTrue(String endereco);
     Optional<Cliente> findByUsuario(Usuario usuario);
+    double countByAtivoTrue();
 
 }

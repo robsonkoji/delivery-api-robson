@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -58,6 +59,14 @@ public class JwtUtil {
      */
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
+    }
+
+    /**
+     * Método público para expor a data de expiração
+     */
+    public Instant getExpirationInstant(String token) {
+    Date expirationDate = extractExpiration(token);
+    return expirationDate.toInstant();
     }
 
     /**

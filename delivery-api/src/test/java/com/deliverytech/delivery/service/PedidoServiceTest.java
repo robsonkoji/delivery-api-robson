@@ -98,7 +98,7 @@ class PedidoServiceTest {
         when(pedidoRepository.save(any())).thenAnswer(invocation -> {
             Pedido p = invocation.getArgument(0, Pedido.class);
             p.setId(500L);
-            p.setStatus(StatusPedido.CRIADO);
+            p.setStatus(StatusPedido.PENDENTE);
             return p;
         });
 
@@ -134,7 +134,7 @@ class PedidoServiceTest {
         PedidoResponse response = pedidoService.criarPedido(request);
 
         assertNotNull(response, "Resposta do pedido não pode ser null");
-        assertEquals(StatusPedido.CRIADO, response.getStatus());
+        assertEquals(StatusPedido.PENDENTE, response.getStatus());
         assertEquals(cliente.getId(), response.getCliente().getId());
         assertNotNull(response.getRestaurante(), "Restaurante no response deveria estar preenchido");
         assertEquals(restaurante.getId(), response.getRestaurante().getId());
@@ -146,7 +146,7 @@ class PedidoServiceTest {
         // Verifica que o mapper foi chamado com o pedido persistido
         ArgumentCaptor<Pedido> captor = ArgumentCaptor.forClass(Pedido.class);
         verify(pedidoMapper).toResponse(captor.capture());
-        assertEquals(StatusPedido.CRIADO, captor.getValue().getStatus());
+        assertEquals(StatusPedido.PENDENTE, captor.getValue().getStatus());
     }
 
     @Test
