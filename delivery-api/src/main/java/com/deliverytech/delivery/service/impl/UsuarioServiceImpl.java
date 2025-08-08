@@ -9,6 +9,10 @@ import com.deliverytech.delivery.service.UsuarioService;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,18 +20,18 @@ import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioServiceImpl.class);
+
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final MeterRegistry meterRegistry;
 
-    // Gauge: número de usuários ativos
-    private final AtomicInteger usuariosAtivos = new AtomicInteger();
+    private final AtomicInteger usuariosAtivos = new AtomicInteger(0);
 
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository,
                               PasswordEncoder passwordEncoder,
@@ -37,28 +41,36 @@ public class UsuarioServiceImpl implements UsuarioService {
         this.meterRegistry = meterRegistry;
     }
 
-    // Registra a métrica do Gauge após construção do bean
+    private String getCorrelationId() {
+        String cid = MDC.get("correlationId");
+        return cid != null ? cid : "N/A";
+    }
+
     @PostConstruct
     public void init() {
         meterRegistry.gauge("usuarios_ativos", usuariosAtivos);
+        logger.info("[{}] Gauge 'usuarios_ativos' registrado com sucesso.", getCorrelationId());
     }
 
-    // Método de exemplo: poderia ser chamado quando o usuário fizer login
     public void usuarioLogado() {
-        usuariosAtivos.incrementAndGet();
+        int total = usuariosAtivos.incrementAndGet();
+        logger.info("[{}] Usuário logado. Total de usuários ativos: {}", getCorrelationId(), total);
     }
 
-    // Método de exemplo: poderia ser chamado quando o usuário fizer logout
     public void usuarioDeslogado() {
-        usuariosAtivos.decrementAndGet();
+        int total = usuariosAtivos.decrementAndGet();
+        logger.info("[{}] Usuário deslogado. Total de usuários ativos: {}", getCorrelationId(), total);
     }
 
     @Override
     public Usuario registrarUsuario(RegisterRequest request) {
-        Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(request.getEmail());
-        if (usuarioExistente.isPresent()) {
-            throw new IllegalArgumentException("Email já está em uso.");
-        }
+        logger.info("[{}] Tentando registrar usuário com email: {}", getCorrelationId(), request.getEmail());
+
+        usuarioRepository.findByEmail(request.getEmail())
+            .ifPresent(u -> {
+                logger.warn("[{}] Falha ao registrar usuário: email já está em uso: {}", getCorrelationId(), request.getEmail());
+                throw new IllegalArgumentException("Email já está em uso.");
+            });
 
         Usuario usuario = new Usuario();
         usuario.setNome(request.getNome());
@@ -72,24 +84,34 @@ public class UsuarioServiceImpl implements UsuarioService {
             usuario.setRestauranteId(request.getRestauranteId());
         }
 
-        return usuarioRepository.save(usuario);
+        Usuario salvo = usuarioRepository.save(usuario);
+        logger.info("[{}] Usuário registrado com sucesso: id={}, email={}", getCorrelationId(), salvo.getId(), salvo.getEmail());
+
+        return salvo;
     }
 
     @Override
     public boolean existsByEmail(String email) {
-        return usuarioRepository.existsByEmail(email);
+        boolean exists = usuarioRepository.existsByEmail(email);
+        logger.debug("[{}] Verificando existência do email '{}': {}", getCorrelationId(), email, exists);
+        return exists;
     }
 
     @Override
     public Usuario getUsuarioLogado() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            logger.error("[{}] Tentativa de obter usuário logado sem autenticação", getCorrelationId());
             throw new RuntimeException("Usuário não está autenticado");
         }
 
-        String email = auth.getName();
+        String email = authentication.getName();
+        logger.debug("[{}] Obtendo usuário logado pelo email: {}", getCorrelationId(), email);
 
         return usuarioRepository.findByEmail(email)
-            .orElseThrow(() -> new EntityNotFoundException("Usuário logado não encontrado"));
+                .orElseThrow(() -> {
+                    logger.error("[{}] Usuário logado não encontrado no banco: {}", getCorrelationId(), email);
+                    return new EntityNotFoundException("Usuário logado não encontrado");
+                });
     }
 }

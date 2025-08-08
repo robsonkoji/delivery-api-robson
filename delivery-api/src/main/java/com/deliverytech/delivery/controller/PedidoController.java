@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +45,7 @@ public class PedidoController {
                 @ApiResponse(responseCode = "200", description = "Pedido criado com sucesso"),
                 @ApiResponse(responseCode = "400", description = "Dados inválidos")
             })
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<ApiWrapperResponse<PedidoResponse>> criarPedido(@Valid @RequestBody PedidoRequest request) {
         PedidoResponse response = pedidoService.criarPedido(request);
         return ResponseEntity.ok(UtilsResponse.created(response));
@@ -127,7 +129,7 @@ public class PedidoController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or (hasRole('CLIENTE') and #clienteId == principal.id)")
-    @GetMapping("/clientes/{clienteId}")
+    @GetMapping("/cliente/{clienteId}")
     @Operation(summary = "Histórico de pedidos de um cliente")
     public ResponseEntity<ApiWrapperResponse<List<PedidoResponse>>> buscarPorCliente(@PathVariable Long clienteId) {
         List<PedidoResponse> pedidos = pedidoService.buscarPedidosPorCliente(clienteId);
