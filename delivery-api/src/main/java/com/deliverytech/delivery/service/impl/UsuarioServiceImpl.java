@@ -9,6 +9,10 @@ import com.deliverytech.delivery.service.UsuarioService;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -32,6 +36,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final MeterRegistry meterRegistry;
 
     private final AtomicInteger usuariosAtivos = new AtomicInteger(0);
+
+    private final Tracer tracer = GlobalOpenTelemetry.getTracer("delivery-api");
 
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository,
                               PasswordEncoder passwordEncoder,
@@ -64,54 +70,87 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Usuario registrarUsuario(RegisterRequest request) {
-        logger.info("[{}] Tentando registrar usuário com email: {}", getCorrelationId(), request.getEmail());
+        Span span = tracer.spanBuilder("UsuarioServiceImpl.registrarUsuario").startSpan();
+        span.setAttribute("email", request.getEmail());
+        try {
+            usuarioRepository.findByEmail(request.getEmail())
+                .ifPresent(u -> {
+                    String msg = "Email já está em uso: " + request.getEmail();
+                    logger.warn("[{}] Falha ao registrar usuário: {}", getCorrelationId(), msg);
+                    span.recordException(new IllegalArgumentException(msg));
+                    span.setAttribute("error", true);
+                    throw new IllegalArgumentException(msg);
+                });
 
-        usuarioRepository.findByEmail(request.getEmail())
-            .ifPresent(u -> {
-                logger.warn("[{}] Falha ao registrar usuário: email já está em uso: {}", getCorrelationId(), request.getEmail());
-                throw new IllegalArgumentException("Email já está em uso.");
-            });
+            Usuario usuario = new Usuario();
+            usuario.setNome(request.getNome());
+            usuario.setEmail(request.getEmail());
+            usuario.setSenha(passwordEncoder.encode(request.getSenha()));
+            usuario.setRole(request.getRole());
+            usuario.setAtivo(true);
+            usuario.setDataCriacao(LocalDateTime.now());
 
-        Usuario usuario = new Usuario();
-        usuario.setNome(request.getNome());
-        usuario.setEmail(request.getEmail());
-        usuario.setSenha(passwordEncoder.encode(request.getSenha()));
-        usuario.setRole(request.getRole());
-        usuario.setAtivo(true);
-        usuario.setDataCriacao(LocalDateTime.now());
+            if (request.getRole() == Role.RESTAURANTE) {
+                usuario.setRestauranteId(request.getRestauranteId());
+            }
 
-        if (request.getRole() == Role.RESTAURANTE) {
-            usuario.setRestauranteId(request.getRestauranteId());
+            Usuario salvo = usuarioRepository.save(usuario);
+            logger.info("[{}] Usuário registrado com sucesso: id={}, email={}", getCorrelationId(), salvo.getId(), salvo.getEmail());
+
+            return salvo;
+        } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
+            throw e;
+        } finally {
+            span.end();
         }
-
-        Usuario salvo = usuarioRepository.save(usuario);
-        logger.info("[{}] Usuário registrado com sucesso: id={}, email={}", getCorrelationId(), salvo.getId(), salvo.getEmail());
-
-        return salvo;
     }
 
     @Override
     public boolean existsByEmail(String email) {
-        boolean exists = usuarioRepository.existsByEmail(email);
-        logger.debug("[{}] Verificando existência do email '{}': {}", getCorrelationId(), email, exists);
-        return exists;
+        Span span = tracer.spanBuilder("UsuarioServiceImpl.existsByEmail").startSpan();
+        span.setAttribute("email", email);
+        try {
+            boolean exists = usuarioRepository.existsByEmail(email);
+            logger.debug("[{}] Verificando existência do email '{}': {}", getCorrelationId(), email, exists);
+            return exists;
+        } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
+            throw e;
+        } finally {
+            span.end();
+        }
     }
 
     @Override
     public Usuario getUsuarioLogado() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            logger.error("[{}] Tentativa de obter usuário logado sem autenticação", getCorrelationId());
-            throw new RuntimeException("Usuário não está autenticado");
+        Span span = tracer.spanBuilder("UsuarioServiceImpl.getUsuarioLogado").startSpan();
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                String msg = "Usuário não está autenticado";
+                logger.error("[{}] Tentativa de obter usuário logado sem autenticação", getCorrelationId());
+                span.recordException(new RuntimeException(msg));
+                span.setAttribute("error", true);
+                throw new RuntimeException(msg);
+            }
+
+            String email = authentication.getName();
+            logger.debug("[{}] Obtendo usuário logado pelo email: {}", getCorrelationId(), email);
+            span.setAttribute("email", email);
+
+            return usuarioRepository.findByEmail(email)
+                    .orElseThrow(() -> {
+                        String msg = "Usuário logado não encontrado";
+                        logger.error("[{}] Usuário logado não encontrado no banco: {}", getCorrelationId(), email);
+                        span.recordException(new EntityNotFoundException(msg));
+                        span.setAttribute("error", true);
+                        return new EntityNotFoundException(msg);
+                    });
+        } finally {
+            span.end();
         }
-
-        String email = authentication.getName();
-        logger.debug("[{}] Obtendo usuário logado pelo email: {}", getCorrelationId(), email);
-
-        return usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> {
-                    logger.error("[{}] Usuário logado não encontrado no banco: {}", getCorrelationId(), email);
-                    return new EntityNotFoundException("Usuário logado não encontrado");
-                });
     }
 }

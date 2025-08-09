@@ -1,45 +1,86 @@
-version: '3.8'
+version: '3.8' # Versão do Docker Compose
 
 networks:
   default:
-    driver: bridge
-    
+    driver: bridge # Rede bridge padrão para comunicação entre os serviços
+
 services:
+  # ===========================================================
+  # Serviço principal da API Delivery
+  # ===========================================================
   delivery-api:
-    build: .
+    build: . # Constrói a imagem a partir do Dockerfile na raiz do projeto
     ports:
-      - "8080:8080"
+      - "8080:8080" # Expõe a porta da API para acesso externo
     environment:
-      - SPRING_PROFILES_ACTIVE=default
-    restart: unless-stopped
-    
+      - SPRING_PROFILES_ACTIVE=default # Ativa o profile default do Spring Boot
 
+      # Configuração do OpenTelemetry Java Agent
+      - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_SERVICE_NAME=delivery-api # Nome do serviço para aparecer no Jaeger
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318 # Endpoint OTLP para envio de traces
+      - OTEL_METRICS_EXPORTER=none # Desativa exportação de métricas (foco apenas em traces)
+      - OTEL_LOGS_EXPORTER=none # Desativa exportação de logs
+      - OTEL_TRACES_EXPORTER=otlp # Usa OTLP como formato de exportação de traces
 
+      # Configuração do Sampling (amostragem)
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio  # Usa sampler baseado no trace pai + sampling probabilístico
+      - OTEL_TRACES_SAMPLER_ARG=0.1                     # 10% das requisições serão amostradas
+
+    volumes:
+      # Monta o arquivo do agente OpenTelemetry para dentro do contêiner
+      - ./opentelemetry-javaagent.jar:/otel/opentelemetry-javaagent.jar
+    restart: unless-stopped # Reinicia automaticamente, exceto se parado manualmente
+    depends_on:
+      - jaeger # Garante que o Jaeger inicie antes da API
+
+  # ===========================================================
+  # Serviço do Prometheus (coleta de métricas)
+  # ===========================================================
   prometheus:
     image: prom/prometheus:latest # Imagem oficial do Prometheus
-    container_name: prometheus # Nome do contêiner
-    restart: unless-stopped # Reinicia o contêiner automaticamente a menos que seja parado manualmente
+    container_name: prometheus
+    restart: unless-stopped
     ports:
-      - "9090:9090" # Mapeia a porta 9090 do host para a porta 9090 do contêiner
+      - "9090:9090" # Interface web do Prometheus
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus_rules/:/etc/prometheus/prometheus_rules/ # Monta o arquivo de configuração
-      - prometheus_data:/prometheus # Monta o volume para persistir os dados do Prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # Arquivo de configuração principal
+      - ./prometheus_rules/:/etc/prometheus/prometheus_rules/ # Regras de alertas
+      - prometheus_data:/prometheus # Volume para persistência dos dados
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml' # Especifica o arquivo de configuração
-      - '--storage.tsdb.path=/prometheus' # Especifica o caminho para o armazenamento de dados
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
 
-      # Define o volume nomeado para os dados do Prometheus
-
-  grafana: # Nome do serviço
-    image: grafana/grafana-oss:latest # Imagem do Grafana (pode especificar uma versão, ex: 10.4.2)
-    container_name: grafana # Nome do contêiner
-    restart: unless-stopped # Reinicia o contêiner automaticamente a menos que seja parado manualmente
+  # ===========================================================
+  # Serviço do Grafana (visualização de métricas)
+  # ===========================================================
+  grafana:
+    image: grafana/grafana-oss:latest # Imagem oficial do Grafana OSS
+    container_name: grafana
+    restart: unless-stopped
     ports:
-      - "3000:3000" # Mapeia a porta 3000 do host para a porta 3000 do contêiner
+      - "3000:3000" # Interface web do Grafana
     volumes:
-      - grafana-data:/var/lib/grafana # Monta o volume para persistir os dados do Grafana
+      - grafana-data:/var/lib/grafana # Volume para persistência de dashboards
 
+  # ===========================================================
+  # Serviço do Jaeger (visualização de traces)
+  # ===========================================================
+  jaeger:
+    image: jaegertracing/all-in-one:latest # Imagem oficial do Jaeger All-in-One
+    container_name: jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686" # UI do Jaeger
+      - "4317:4317"   # Endpoint OTLP gRPC (para o OpenTelemetry)
+      - "4318:4318"   # Endpoint OTLP HTTP
+      - "9411:9411"   # Endpoint compatível com Zipkin
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411 # Ativa suporte ao protocolo Zipkin
+
+# ===========================================================
+# Volumes persistentes para Prometheus e Grafana
+# ===========================================================
 volumes:
-  grafana-data: # Define o volume nomeado para os dados do Grafana
-  prometheus_data: 
+  grafana-data:
+  prometheus_data:

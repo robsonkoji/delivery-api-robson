@@ -21,6 +21,9 @@ import com.deliverytech.delivery.security.SecurityUtils;
 import com.deliverytech.delivery.service.AuthService;
 import com.deliverytech.delivery.service.RestauranteService;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -33,6 +36,8 @@ public class RestauranteServiceImpl implements RestauranteService {
     private final RestauranteRepository restauranteRepository;
     private final RestauranteMapper mapper;
 
+    private final Tracer tracer = GlobalOpenTelemetry.getTracer("delivery-api");
+
     private String getCorrelationId() {
         String cid = MDC.get("correlationId");
         return cid != null ? cid : "N/A";
@@ -40,20 +45,27 @@ public class RestauranteServiceImpl implements RestauranteService {
 
     @Override
     public RestauranteResponse cadastrarRestaurante(RestauranteRequest request) {
+        Span span = tracer.spanBuilder("RestauranteServiceImpl.cadastrarRestaurante").startSpan();
         try {
             Restaurante restaurante = mapper.toEntity(request);
-            restaurante.setAtivo(true); // Ativa por padrão
+            restaurante.setAtivo(true);
             Restaurante salvo = restauranteRepository.save(restaurante);
             logger.info("[{}] Restaurante cadastrado com sucesso: id={}", getCorrelationId(), salvo.getId());
             return mapper.toResponse(salvo);
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logger.error("[{}] Erro ao cadastrar restaurante", getCorrelationId(), e);
             throw new RuntimeException("Erro ao cadastrar restaurante", e);
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public RestauranteResponse buscarRestaurantePorId(Long id) {
+        Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantePorId").startSpan();
+        span.setAttribute("restauranteId", id);
         try {
             Restaurante restaurante = buscarOuLancar(id);
             return mapper.toResponse(restaurante);
@@ -61,13 +73,19 @@ public class RestauranteServiceImpl implements RestauranteService {
             logger.warn("[{}] Restaurante não encontrado para id={}", getCorrelationId(), id);
             throw e;
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logger.error("[{}] Erro ao buscar restaurante por id={}", getCorrelationId(), id, e);
             throw new RuntimeException("Erro ao buscar restaurante", e);
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public RestauranteResponse atualizarRestaurante(Long id, RestauranteRequest request) {
+        Span span = tracer.spanBuilder("RestauranteServiceImpl.atualizarRestaurante").startSpan();
+        span.setAttribute("restauranteId", id);
         authService.getUsuarioAutenticado();
 
         if (!SecurityUtils.hasRole("ADMIN") && !isOwner(id)) {
@@ -91,39 +109,57 @@ public class RestauranteServiceImpl implements RestauranteService {
             logger.warn("[{}] Restaurante não encontrado para atualização: id={}", getCorrelationId(), id);
             throw e;
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logger.error("[{}] Erro ao atualizar restaurante id={}", getCorrelationId(), id, e);
             throw new RuntimeException("Erro ao atualizar restaurante", e);
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public List<RestauranteResponse> buscarRestaurantesPorCategoria(String categoria) {
+        Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesPorCategoria").startSpan();
+        span.setAttribute("categoria", categoria);
         try {
             List<Restaurante> restaurantes = restauranteRepository.findByCategoriaIgnoreCase(categoria);
             return restaurantes.stream()
                     .map(mapper::toResponse)
                     .toList();
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logger.error("[{}] Erro ao buscar restaurantes por categoria={}", getCorrelationId(), categoria, e);
             return Collections.emptyList();
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public List<RestauranteResponse> buscarRestaurantesDisponiveis() {
+        Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesDisponiveis").startSpan();
         try {
             List<Restaurante> restaurantes = restauranteRepository.findByAtivoTrue();
             return restaurantes.stream()
                     .map(mapper::toResponse)
                     .toList();
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logger.error("[{}] Erro ao buscar restaurantes disponíveis", getCorrelationId(), e);
             return Collections.emptyList();
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public List<RestauranteResponse> buscarRestaurantesComFiltros(String categoria, Boolean ativo) {
+        Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesComFiltros").startSpan();
+        span.setAttribute("categoria", categoria == null ? "null" : categoria);
+        span.setAttribute("ativo", ativo == null ? "null" : ativo.toString());
         try {
             List<Restaurante> restaurantes;
             if (categoria != null && ativo != null) {
@@ -139,13 +175,19 @@ public class RestauranteServiceImpl implements RestauranteService {
                     .map(mapper::toResponse)
                     .toList();
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logger.error("[{}] Erro ao buscar restaurantes com filtros: categoria={}, ativo={}", getCorrelationId(), categoria, ativo, e);
             return Collections.emptyList();
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public RestauranteResponse alterarStatusRestaurante(Long id) {
+        Span span = tracer.spanBuilder("RestauranteServiceImpl.alterarStatusRestaurante").startSpan();
+        span.setAttribute("restauranteId", id);
         authService.getUsuarioAutenticado();
 
         if (!SecurityUtils.hasRole("ADMIN") && !isOwner(id)) {
@@ -164,13 +206,20 @@ public class RestauranteServiceImpl implements RestauranteService {
             logger.warn("[{}] Restaurante não encontrado para alterar status: id={}", getCorrelationId(), id);
             throw e;
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logger.error("[{}] Erro ao alterar status do restaurante id={}", getCorrelationId(), id, e);
             throw new RuntimeException("Erro ao alterar status do restaurante", e);
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public BigDecimal calcularTaxaEntrega(Long restauranteId, String cep) {
+        Span span = tracer.spanBuilder("RestauranteServiceImpl.calcularTaxaEntrega").startSpan();
+        span.setAttribute("restauranteId", restauranteId);
+        span.setAttribute("cep", cep == null ? "null" : cep);
         try {
             Restaurante restaurante = buscarOuLancar(restauranteId);
             if (cep != null && cep.startsWith("01")) {
@@ -181,13 +230,19 @@ public class RestauranteServiceImpl implements RestauranteService {
             logger.warn("[{}] Restaurante não encontrado para calcular taxa: id={}", getCorrelationId(), restauranteId);
             throw e;
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logger.error("[{}] Erro ao calcular taxa de entrega para restaurante id={}", getCorrelationId(), restauranteId, e);
             throw new RuntimeException("Erro ao calcular taxa de entrega", e);
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public List<RestauranteResponse> buscarRestaurantesProximos(String cep) {
+        Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesProximos").startSpan();
+        span.setAttribute("cep", cep == null ? "null" : cep);
         try {
             if (cep == null || cep.length() < 3) {
                 logger.warn("[{}] CEP inválido para busca de restaurantes próximos: {}", getCorrelationId(), cep);
@@ -202,8 +257,12 @@ public class RestauranteServiceImpl implements RestauranteService {
                     .map(mapper::toResponse)
                     .toList();
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logger.error("[{}] Erro ao buscar restaurantes próximos para cep={}", getCorrelationId(), cep, e);
             return Collections.emptyList();
+        } finally {
+            span.end();
         }
     }
 
@@ -221,6 +280,8 @@ public class RestauranteServiceImpl implements RestauranteService {
 
     @Override
     public void removerRestaurante(Long id) {
+        Span span = tracer.spanBuilder("RestauranteServiceImpl.removerRestaurante").startSpan();
+        span.setAttribute("restauranteId", id);
         authService.getUsuarioAutenticado();
 
         if (!SecurityUtils.hasRole("ADMIN") && !isOwner(id)) {
@@ -237,8 +298,12 @@ public class RestauranteServiceImpl implements RestauranteService {
             logger.warn("[{}] Restaurante não encontrado para remoção: id={}", getCorrelationId(), id);
             throw e;
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logger.error("[{}] Erro ao remover restaurante id={}", getCorrelationId(), id, e);
             throw new RuntimeException("Erro ao remover restaurante", e);
+        } finally {
+            span.end();
         }
     }
 }

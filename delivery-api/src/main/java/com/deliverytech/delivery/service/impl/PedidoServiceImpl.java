@@ -28,6 +28,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -43,13 +47,14 @@ public class PedidoServiceImpl implements PedidoService {
     private final PedidoMapper mapper;
     private final PedidoMetrics pedidoMetrics;
 
-    // Obtém correlationId do MDC para rastreamento estruturado
-    private String getCorrelationId() {
-    String cid = MDC.get("correlationId");
-    return cid != null ? cid : "N/A";
-}
+    // OpenTelemetry Tracer
+    private final Tracer tracer = GlobalOpenTelemetry.getTracer("delivery-api");
 
-    // Método utilitário para logar erro e encapsular exceções inesperadas
+    private String getCorrelationId() {
+        String cid = MDC.get("correlationId");
+        return cid != null ? cid : "N/A";
+    }
+
     private RuntimeException logAndWrap(String msg, Exception ex) {
         logger.error("[{}] {}", getCorrelationId(), msg, ex);
         return new RuntimeException(msg, ex);
@@ -57,13 +62,18 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Override
     public PedidoResponse criarPedido(PedidoRequest request) {
+        Span span = tracer.spanBuilder("PedidoServiceImpl.criarPedido").startSpan();
         Timer.Sample sample = pedidoMetrics.startTimer();
 
         try {
+            span.setAttribute("clienteId", request.getClienteId());
+            span.setAttribute("restauranteId", request.getRestauranteId());
+            span.setAttribute("qtdItens", request.getItens() != null ? request.getItens().size() : 0);
+
             Usuario usuario = usuarioService.getUsuarioLogado();
 
-            // Valida permissão do usuário para criar pedido para o cliente informado
             if (!SecurityUtils.hasRole("ADMIN") && !request.getClienteId().equals(usuario.getId())) {
+                span.addEvent("Permissão negada");
                 throw new BusinessException("Você não tem permissão para criar pedidos para outros clientes.");
             }
 
@@ -71,6 +81,7 @@ public class PedidoServiceImpl implements PedidoService {
                     .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado"));
 
             if (!cliente.isAtivo()) {
+                span.addEvent("Cliente inativo");
                 throw new BusinessException("Cliente está inativo");
             }
 
@@ -78,6 +89,7 @@ public class PedidoServiceImpl implements PedidoService {
                     .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
 
             if (Boolean.FALSE.equals(restaurante.getAtivo())) {
+                span.addEvent("Restaurante inativo");
                 throw new BusinessException("Restaurante está inativo");
             }
 
@@ -120,22 +132,30 @@ public class PedidoServiceImpl implements PedidoService {
             return mapper.toResponse(salvo);
 
         } catch (BusinessException | EntityNotFoundException ex) {
-            logger.warn("[{}] Exceção ao criar pedido: {}", getCorrelationId(), ex.getMessage());
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw ex;
         } catch (Exception ex) {
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw logAndWrap("Erro ao criar pedido", ex);
         } finally {
             pedidoMetrics.stopTimer(sample, "pedido.criacao.tempo", "criar");
+            span.end();
         }
     }
 
     @Override
     public PedidoResponse buscarPedidoPorId(Long id) {
+        Span span = tracer.spanBuilder("PedidoServiceImpl.buscarPedidoPorId").startSpan();
+        span.setAttribute("pedidoId", id);
+
         try {
             Pedido pedido = pedidoRepository.findById(id)
                     .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado com ID: " + id));
 
             if (!canAccess(id)) {
+                span.addEvent("Acesso negado");
                 throw new BusinessException("Você não tem permissão para visualizar este pedido.");
             }
 
@@ -144,28 +164,45 @@ public class PedidoServiceImpl implements PedidoService {
             return mapper.toResponse(pedido);
 
         } catch (BusinessException | EntityNotFoundException ex) {
-            logger.warn("[{}] Exceção ao buscar pedido por ID: {}", getCorrelationId(), ex.getMessage());
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw ex;
         } catch (Exception ex) {
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw logAndWrap("Erro ao buscar pedido por id " + id, ex);
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public List<PedidoResponse> buscarPedidosPorCliente(Long clienteId) {
+        Span span = tracer.spanBuilder("PedidoServiceImpl.buscarPedidosPorCliente").startSpan();
+        span.setAttribute("clienteId", clienteId);
+
         try {
             return pedidoRepository.findByClienteId(clienteId).stream()
                     .map(mapper::toResponse)
                     .toList();
         } catch (Exception ex) {
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw logAndWrap("Erro ao buscar pedidos por cliente " + clienteId, ex);
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public PedidoResponse atualizarStatusPedido(Long id, StatusPedido novoStatus) {
+        Span span = tracer.spanBuilder("PedidoServiceImpl.atualizarStatusPedido").startSpan();
+        span.setAttribute("pedidoId", id);
+        span.setAttribute("novoStatus", novoStatus.name());
+
         try {
             if (!canAccess(id)) {
+                span.addEvent("Acesso negado");
                 throw new BusinessException("Você não tem permissão para atualizar o status deste pedido.");
             }
 
@@ -190,10 +227,15 @@ public class PedidoServiceImpl implements PedidoService {
             return mapper.toResponse(pedido);
 
         } catch (BusinessException | EntityNotFoundException | TransactionException ex) {
-            logger.warn("[{}] Exceção ao atualizar status do pedido: {}", getCorrelationId(), ex.getMessage());
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw ex;
         } catch (Exception ex) {
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw logAndWrap("Erro ao atualizar status do pedido id " + id, ex);
+        } finally {
+            span.end();
         }
     }
 
@@ -213,6 +255,9 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Override
     public void cancelarPedido(Long id) {
+        Span span = tracer.spanBuilder("PedidoServiceImpl.cancelarPedido").startSpan();
+        span.setAttribute("pedidoId", id);
+
         try {
             if (!canAccess(id)) {
                 throw new BusinessException("Você não tem permissão para cancelar este pedido.");
@@ -231,15 +276,23 @@ public class PedidoServiceImpl implements PedidoService {
             logger.info("[{}] Pedido cancelado: id={}", getCorrelationId(), id);
 
         } catch (BusinessException | EntityNotFoundException | TransactionException ex) {
-            logger.warn("[{}] Exceção ao cancelar pedido: {}", getCorrelationId(), ex.getMessage());
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw ex;
         } catch (Exception ex) {
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw logAndWrap("Erro ao cancelar pedido id " + id, ex);
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public List<PedidoResponse> listarPedidosComFiltro(StatusPedido status, LocalDateTime dataInicio, LocalDateTime dataFim) {
+        Span span = tracer.spanBuilder("PedidoServiceImpl.listarPedidosComFiltro").startSpan();
+        span.setAttribute("status", status != null ? status.name() : "TODOS");
+
         try {
             List<Pedido> pedidos = pedidoRepository.findAll().stream()
                     .filter(p -> (status == null || p.getStatus() == status))
@@ -250,12 +303,19 @@ public class PedidoServiceImpl implements PedidoService {
             return pedidos.stream().map(mapper::toResponse).toList();
 
         } catch (Exception ex) {
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw logAndWrap("Erro ao listar pedidos com filtro", ex);
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public List<PedidoResponse> buscarPedidosPorRestaurante(Long restauranteId) {
+        Span span = tracer.spanBuilder("PedidoServiceImpl.buscarPedidosPorRestaurante").startSpan();
+        span.setAttribute("restauranteId", restauranteId);
+
         try {
             Restaurante restaurante = restauranteRepository.findById(restauranteId)
                     .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado"));
@@ -266,15 +326,23 @@ public class PedidoServiceImpl implements PedidoService {
                     .toList();
 
         } catch (EntityNotFoundException ex) {
-            logger.warn("[{}] Exceção ao buscar pedidos por restaurante: {}", getCorrelationId(), ex.getMessage());
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw ex;
         } catch (Exception ex) {
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw logAndWrap("Erro ao buscar pedidos por restaurante " + restauranteId, ex);
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public boolean canAccess(Long pedidoId) {
+        Span span = tracer.spanBuilder("PedidoServiceImpl.canAccess").startSpan();
+        span.setAttribute("pedidoId", pedidoId);
+
         try {
             Pedido pedido = pedidoRepository.findById(pedidoId)
                     .orElseThrow(() -> new EntityNotFoundException("Pedido não encontrado"));
@@ -290,10 +358,15 @@ public class PedidoServiceImpl implements PedidoService {
                 default -> false;
             };
         } catch (EntityNotFoundException ex) {
-            logger.warn("[{}] Exceção em verificação de acesso ao pedido: {}", getCorrelationId(), ex.getMessage());
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw ex;
         } catch (Exception ex) {
+            span.recordException(ex);
+            span.setAttribute("error", true);
             throw logAndWrap("Erro ao verificar acesso ao pedido " + pedidoId, ex);
+        } finally {
+            span.end();
         }
     }
 
@@ -303,14 +376,21 @@ public class PedidoServiceImpl implements PedidoService {
         description = "Tempo para calcular o total do pedido"
     )
     public BigDecimal calcularTotalPedido(List<ItemPedidoRequest> itens) {
-        if (itens == null || itens.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
+        Span span = tracer.spanBuilder("PedidoServiceImpl.calcularTotalPedido").startSpan();
+        span.setAttribute("qtdItens", itens != null ? itens.size() : 0);
 
-        return itens.stream()
-            .filter(item -> item.getPrecoUnitario() != null && item.getQuantidade() != null)
-            .map(item -> item.getPrecoUnitario()
-                .multiply(BigDecimal.valueOf(item.getQuantidade())))
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        try {
+            if (itens == null || itens.isEmpty()) {
+                return BigDecimal.ZERO;
+            }
+
+            return itens.stream()
+                .filter(item -> item.getPrecoUnitario() != null && item.getQuantidade() != null)
+                .map(item -> item.getPrecoUnitario()
+                    .multiply(BigDecimal.valueOf(item.getQuantidade())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        } finally {
+            span.end();
+        }
     }
 }

@@ -14,12 +14,18 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+
 @Service
 public class RelatorioServiceImpl implements RelatorioService {
 
     private static final Logger logger = LoggerFactory.getLogger(RelatorioServiceImpl.class);
 
     private final PedidoRepository pedidoRepository;
+
+    private final Tracer tracer = GlobalOpenTelemetry.getTracer("delivery-api");
 
     public RelatorioServiceImpl(PedidoRepository pedidoRepository) {
         this.pedidoRepository = pedidoRepository;
@@ -36,36 +42,55 @@ public class RelatorioServiceImpl implements RelatorioService {
 
     @Override
     public List<RelatorioVendaPorRestauranteResponse> obterVendasPorRestaurante() {
+        Span span = tracer.spanBuilder("RelatorioServiceImpl.obterVendasPorRestaurante").startSpan();
         try {
             return pedidoRepository.buscarVendasPorRestaurante();
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logError("Erro ao obter vendas por restaurante", e);
             return Collections.emptyList();
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public List<RelatorioProdutoMaisVendidoResponse> obterProdutosMaisVendidos() {
+        Span span = tracer.spanBuilder("RelatorioServiceImpl.obterProdutosMaisVendidos").startSpan();
         try {
             return pedidoRepository.buscarProdutosMaisVendidos();
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logError("Erro ao obter produtos mais vendidos", e);
             return Collections.emptyList();
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public List<RelatorioClienteAtivoResponse> obterClientesMaisAtivos() {
+        Span span = tracer.spanBuilder("RelatorioServiceImpl.obterClientesMaisAtivos").startSpan();
         try {
             return pedidoRepository.buscarClientesMaisAtivos();
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logError("Erro ao obter clientes mais ativos", e);
             return Collections.emptyList();
+        } finally {
+            span.end();
         }
     }
 
     @Override
     public RelatorioPedidosPorPeriodoResponse obterPedidosPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
+        Span span = tracer.spanBuilder("RelatorioServiceImpl.obterPedidosPorPeriodo").startSpan();
+        span.setAttribute("dataInicio", dataInicio.toString());
+        span.setAttribute("dataFim", dataFim.toString());
+
         try {
             Object[] resultado = pedidoRepository.buscarPedidosPorPeriodo(dataInicio, dataFim);
             if (resultado == null || resultado.length < 2) {
@@ -85,8 +110,12 @@ public class RelatorioServiceImpl implements RelatorioService {
 
             return response;
         } catch (Exception e) {
+            span.recordException(e);
+            span.setAttribute("error", true);
             logError("Erro ao obter pedidos por período: dataInicio=" + dataInicio + ", dataFim=" + dataFim, e);
             return new RelatorioPedidosPorPeriodoResponse();
+        } finally {
+            span.end();
         }
     }
 }
