@@ -7,6 +7,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
@@ -44,6 +47,7 @@ public class RestauranteServiceImpl implements RestauranteService {
     }
 
     @Override
+    @CachePut(value = "restaurantes", key = "#result.id")
     public RestauranteResponse cadastrarRestaurante(RestauranteRequest request) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.cadastrarRestaurante").startSpan();
         try {
@@ -63,6 +67,7 @@ public class RestauranteServiceImpl implements RestauranteService {
     }
 
     @Override
+    @Cacheable(value = "restaurantes", key = "#id")
     public RestauranteResponse buscarRestaurantePorId(Long id) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantePorId").startSpan();
         span.setAttribute("restauranteId", id);
@@ -83,6 +88,7 @@ public class RestauranteServiceImpl implements RestauranteService {
     }
 
     @Override
+    @CachePut(value = "restaurantes", key = "#id")
     public RestauranteResponse atualizarRestaurante(Long id, RestauranteRequest request) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.atualizarRestaurante").startSpan();
         span.setAttribute("restauranteId", id);
@@ -119,6 +125,7 @@ public class RestauranteServiceImpl implements RestauranteService {
     }
 
     @Override
+    @Cacheable(value = "restaurantes", key = "#categoria")
     public List<RestauranteResponse> buscarRestaurantesPorCategoria(String categoria) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesPorCategoria").startSpan();
         span.setAttribute("categoria", categoria);
@@ -138,6 +145,7 @@ public class RestauranteServiceImpl implements RestauranteService {
     }
 
     @Override
+    @Cacheable(value = "restaurantes", key = "'disponiveis'")
     public List<RestauranteResponse> buscarRestaurantesDisponiveis() {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesDisponiveis").startSpan();
         try {
@@ -156,6 +164,7 @@ public class RestauranteServiceImpl implements RestauranteService {
     }
 
     @Override
+    @Cacheable(value = "restaurantes", key = "{#categoria != null ? #categoria : 'all', #ativo != null ? #ativo.toString() : 'all'}")
     public List<RestauranteResponse> buscarRestaurantesComFiltros(String categoria, Boolean ativo) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesComFiltros").startSpan();
         span.setAttribute("categoria", categoria == null ? "null" : categoria);
@@ -185,6 +194,7 @@ public class RestauranteServiceImpl implements RestauranteService {
     }
 
     @Override
+    @CacheEvict(value = "restaurantes", key = "#id")
     public RestauranteResponse alterarStatusRestaurante(Long id) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.alterarStatusRestaurante").startSpan();
         span.setAttribute("restauranteId", id);
@@ -279,6 +289,7 @@ public class RestauranteServiceImpl implements RestauranteService {
     }
 
     @Override
+    @CacheEvict(value = "restaurantes", key = "#id")
     public void removerRestaurante(Long id) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.removerRestaurante").startSpan();
         span.setAttribute("restauranteId", id);
