@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,9 +31,12 @@ class CacheIntegrationTest {
     private StringRedisTemplate stringRedisTemplate;
 
     @BeforeEach
+    @SuppressWarnings("deprecation")
     void setup() {
-        // Limpa todas as chaves do Redis antes de cada teste
-        redisTemplate.getConnectionFactory().getConnection().flushDb();
+        // Garante que a ConnectionFactory não seja null
+        var connectionFactory = Objects.requireNonNull(redisTemplate.getConnectionFactory(), "RedisConnectionFactory não pode ser nulo");
+        var connection = connectionFactory.getConnection();
+        connection.flushDb();
     }
 
     @Test
@@ -45,6 +49,7 @@ class CacheIntegrationTest {
         request.setTelefone("11999999999");
         request.setEndereco("Rua das Flores, 123 00000-000");
 
+        // Cadastra o restaurante (persistência + cache)
         RestauranteResponse cadastrado = restauranteService.cadastrarRestaurante(request);
 
         // Primeira chamada — busca no banco e popula cache

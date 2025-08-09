@@ -29,27 +29,35 @@ class CachePerformanceTest {
     private RedisTemplate<String, Object> redisTemplate;
 
     @BeforeEach
-    void setupSecurityContext() {
-        // Cria um usuário "fake" para simular autenticação no Spring Security
-        Usuario usuarioFake = new Usuario();
-        usuarioFake.setId(1L);
-        usuarioFake.setEmail("admin@email.com");
-
-        var authentication = new UsernamePasswordAuthenticationToken(usuarioFake, null, usuarioFake.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+void setup() {
+    // Limpa o Redis antes de cada teste, sem usar método deprecated
+    if (redisTemplate != null) {
+        var keys = redisTemplate.keys("*");
+        if (keys != null && !keys.isEmpty()) {
+            redisTemplate.delete(keys);
+        }
     }
+
+    // Cria um usuário "fake" para simular autenticação
+    Usuario usuarioFake = new Usuario();
+    usuarioFake.setId(1L);
+    usuarioFake.setEmail("admin@email.com");
+
+    var authentication = new UsernamePasswordAuthenticationToken(
+            usuarioFake,
+            null,
+            usuarioFake.getAuthorities()
+    );
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+}
 
     @AfterEach
     void clearSecurityContext() {
-        // Limpa o contexto para não afetar outros testes
         SecurityContextHolder.clearContext();
     }
 
     @Test
     void deveDemonstrarGanhoDePerformanceComCache() {
-        // Limpa o cache antes do teste
-        redisTemplate.getConnectionFactory().getConnection().flushDb();
-
         // Cria restaurante para testar
         RestauranteRequest request = new RestauranteRequest();
         request.setNome("Restaurante Performance");
@@ -60,25 +68,20 @@ class CachePerformanceTest {
 
         RestauranteResponse cadastrado = restauranteService.cadastrarRestaurante(request);
 
-        // Medir o tempo da primeira chamada (deve acessar DB)
+        // Medir o tempo da primeira chamada (DB)
         long startFirstCall = System.currentTimeMillis();
         RestauranteResponse primeiraChamada = restauranteService.buscarRestaurantePorId(cadastrado.getId());
         long durationFirstCall = System.currentTimeMillis() - startFirstCall;
 
-        // Medir o tempo da segunda chamada (deve vir do cache)
+        // Medir o tempo da segunda chamada (Cache)
         long startSecondCall = System.currentTimeMillis();
         RestauranteResponse segundaChamada = restauranteService.buscarRestaurantePorId(cadastrado.getId());
         long durationSecondCall = System.currentTimeMillis() - startSecondCall;
 
-        // Validar que o resultado da chamada é igual
         assertThat(primeiraChamada).isEqualTo(segundaChamada);
-
-        // Validar que a segunda chamada foi mais rápida (tempo menor)
         assertThat(durationSecondCall).isLessThan(durationFirstCall);
 
         System.out.println("Tempo primeira chamada (DB): " + durationFirstCall + "ms");
-        System.out.println("Tempo segunda chamada (Cache): "+ durationSecondCall + "ms");
-        System.out.println("Tempo terceira chamada (Cache): "+ durationSecondCall + "ms");
+        System.out.println("Tempo segunda chamada (Cache): " + durationSecondCall + "ms");
     }
 }
- 

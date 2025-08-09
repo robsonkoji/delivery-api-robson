@@ -92,7 +92,7 @@
         <artifactId>jackson-datatype-jsr310</artifactId>
         <version>2.15.2</version> <!-- Ou a versão compatível com sua versão Jackson -->
     </dependency>
-
+    
     <!-- Driver Redis Lettuce (padrão no Spring Boot) -->
     <dependency>
         <groupId>io.lettuce</groupId>
