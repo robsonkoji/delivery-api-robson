@@ -6,6 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import com.deliverytech.delivery.dto.request.ClienteRequest;
@@ -60,6 +63,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
+    @CachePut(value = "clientes", key = "#result.id")
     public Cliente cadastrarCliente(ClienteRequest request) {
         Span span = tracer.spanBuilder("ClienteService.cadastrarCliente").startSpan();
         Timer.Sample sample = meterRegistry != null ? Timer.start(meterRegistry) : null;
@@ -107,6 +111,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
+    @Cacheable(value = "clientes", key = "#id")
     public Cliente buscarClientePorId(Long id) {
         Span span = tracer.spanBuilder("ClienteService.buscarClientePorId").startSpan();
         span.setAttribute("cliente.id", id);
@@ -127,6 +132,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
+    @Cacheable(value = "clientes", key = "#email")
     public Cliente buscarClientePorEmail(String email) {
         Span span = tracer.spanBuilder("ClienteService.buscarClientePorEmail").startSpan();
         span.setAttribute("cliente.email", email);
@@ -147,6 +153,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
+    @CachePut(value = "clientes", key = "#id")
     public Cliente atualizarCliente(Long id, ClienteRequest request) {
         Span span = tracer.spanBuilder("ClienteService.atualizarCliente").startSpan();
         span.setAttribute("cliente.id", id);
@@ -179,6 +186,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
+    @CacheEvict(value = "clientes", key = "#id")
     public Cliente ativarDesativarCliente(Long id) {
         Span span = tracer.spanBuilder("ClienteService.ativarDesativarCliente").startSpan();
         span.setAttribute("cliente.id", id);
@@ -256,6 +264,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
+    @CacheEvict(value = "clientes", key = "#id")
     public Cliente inativarCliente(Long id) {
         Span span = tracer.spanBuilder("ClienteService.inativarCliente").startSpan();
         span.setAttribute("cliente.id", id);
@@ -274,6 +283,7 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
+    @CacheEvict(value = "clientes", key = "#id")
     public Cliente ativarCliente(Long id) {
         Span span = tracer.spanBuilder("ClienteService.ativarCliente").startSpan();
         span.setAttribute("cliente.id", id);

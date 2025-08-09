@@ -43,7 +43,7 @@ public class Restaurante {
     private LocalDateTime dataCriacao = LocalDateTime.now();
 
     @Schema(description = "Indica se o restaurante está ativo para pedidos", example = "true")
-    private Boolean ativo;
+    private Boolean ativo = true;
 
     @NotNull
     @PositiveOrZero
@@ -55,7 +55,7 @@ public class Restaurante {
     @Schema(description = "Nota média de avaliação do restaurante", example = "4.7")
     private BigDecimal avaliacao;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")
     @Schema(description = "Usuário responsável pelo restaurante")
     private Usuario usuario;

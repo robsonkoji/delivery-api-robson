@@ -27,12 +27,17 @@ services:
       - OTEL_TRACES_SAMPLER=parentbased_traceidratio  # Usa sampler baseado no trace pai + sampling probabilístico
       - OTEL_TRACES_SAMPLER_ARG=0.1                     # 10% das requisições serão amostradas
 
+      # Configuração do Redis (host e porta) para cache distribuído
+      - SPRING_REDIS_HOST=redis  # Host do serviço Redis (nome do serviço no Docker Compose)
+      - SPRING_REDIS_PORT=6379   # Porta padrão do Redis
+
     volumes:
       # Monta o arquivo do agente OpenTelemetry para dentro do contêiner
       - ./opentelemetry-javaagent.jar:/otel/opentelemetry-javaagent.jar
     restart: unless-stopped # Reinicia automaticamente, exceto se parado manualmente
     depends_on:
-      - jaeger # Garante que o Jaeger inicie antes da API
+      - jaeger  # Garante que o Jaeger inicie antes da API
+      - redis   # Garante que o Redis inicie antes da API
 
   # ===========================================================
   # Serviço do Prometheus (coleta de métricas)
@@ -78,9 +83,32 @@ services:
     environment:
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411 # Ativa suporte ao protocolo Zipkin
 
+  # ===========================================================
+  # Serviço Redis (cache distribuído)
+  # ===========================================================
+  redis:
+    image: redis:7-alpine # Imagem oficial leve do Redis (versão 7, Alpine Linux)
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379" # Porta padrão do Redis exposta localmente para testes/debug
+    volumes:
+      - redis-data:/data # Volume para persistência dos dados do Redis (opcional)
+    command: ["redis-server", "--appendonly", "yes"] # Ativa o modo AOF para persistência
+  
+  # ===========================================================
+  # Serviço Redis Insight
+  # ===========================================================
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: redis-insight
+    ports:
+      - "5540:5540"
+      
 # ===========================================================
-# Volumes persistentes para Prometheus e Grafana
+# Volumes persistentes para Prometheus, Grafana e Redis
 # ===========================================================
 volumes:
   grafana-data:
   prometheus_data:
+  redis-data:

@@ -6,7 +6,10 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.slf4j.MDC;  // Para correlação de logs
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import com.deliverytech.delivery.dto.request.RestauranteRequest;
@@ -21,13 +24,13 @@ import com.deliverytech.delivery.security.SecurityUtils;
 import com.deliverytech.delivery.service.AuthService;
 import com.deliverytech.delivery.service.RestauranteService;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;  // Para tracing distribuído
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor  // Injeta automaticamente os campos finais pelo construtor
 public class RestauranteServiceImpl implements RestauranteService {
 
     private static final Logger logger = LoggerFactory.getLogger(RestauranteServiceImpl.class);
@@ -36,14 +39,24 @@ public class RestauranteServiceImpl implements RestauranteService {
     private final RestauranteRepository restauranteRepository;
     private final RestauranteMapper mapper;
 
+    // Objeto para rastreamento distribuído via OpenTelemetry
     private final Tracer tracer = GlobalOpenTelemetry.getTracer("delivery-api");
 
+    /**
+     * Recupera o correlationId do MDC para logs (ou "N/A" se não existir)
+     * Isso ajuda a correlacionar logs em sistemas distribuídos.
+     */
     private String getCorrelationId() {
         String cid = MDC.get("correlationId");
         return cid != null ? cid : "N/A";
     }
 
+    /**
+     * Cadastra um novo restaurante e atualiza o cache "restaurantes" com a chave do id do restaurante criado.
+     * Usa @CachePut porque a operação grava no banco e no cache.
+     */
     @Override
+    @CachePut(value = "restaurantes", key = "#result.id")
     public RestauranteResponse cadastrarRestaurante(RestauranteRequest request) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.cadastrarRestaurante").startSpan();
         try {
@@ -53,6 +66,7 @@ public class RestauranteServiceImpl implements RestauranteService {
             logger.info("[{}] Restaurante cadastrado com sucesso: id={}", getCorrelationId(), salvo.getId());
             return mapper.toResponse(salvo);
         } catch (Exception e) {
+            // Registra exceção no tracing e loga erro
             span.recordException(e);
             span.setAttribute("error", true);
             logger.error("[{}] Erro ao cadastrar restaurante", getCorrelationId(), e);
@@ -62,7 +76,12 @@ public class RestauranteServiceImpl implements RestauranteService {
         }
     }
 
+    /**
+     * Busca um restaurante por ID, usando cache "restaurantes" com chave id.
+     * Caso não esteja no cache, busca no banco e popula cache.
+     */
     @Override
+    @Cacheable(value = "restaurantes", key = "#id")
     public RestauranteResponse buscarRestaurantePorId(Long id) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantePorId").startSpan();
         span.setAttribute("restauranteId", id);
@@ -82,7 +101,12 @@ public class RestauranteServiceImpl implements RestauranteService {
         }
     }
 
+    /**
+     * Atualiza dados do restaurante e atualiza o cache com chave id.
+     * Valida permissão: só ADMIN ou dono pode atualizar.
+     */
     @Override
+    @CachePut(value = "restaurantes", key = "#id")
     public RestauranteResponse atualizarRestaurante(Long id, RestauranteRequest request) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.atualizarRestaurante").startSpan();
         span.setAttribute("restauranteId", id);
@@ -96,6 +120,7 @@ public class RestauranteServiceImpl implements RestauranteService {
 
         try {
             Restaurante restaurante = buscarOuLancar(id);
+            // Atualiza campos
             restaurante.setNome(request.getNome());
             restaurante.setCategoria(request.getCategoria());
             restaurante.setEndereco(request.getEndereco());
@@ -118,7 +143,11 @@ public class RestauranteServiceImpl implements RestauranteService {
         }
     }
 
+    /**
+     * Busca restaurantes por categoria (cacheada pela categoria).
+     */
     @Override
+    @Cacheable(value = "restaurantes", key = "#categoria")
     public List<RestauranteResponse> buscarRestaurantesPorCategoria(String categoria) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesPorCategoria").startSpan();
         span.setAttribute("categoria", categoria);
@@ -137,7 +166,12 @@ public class RestauranteServiceImpl implements RestauranteService {
         }
     }
 
+    /**
+     * Busca restaurantes ativos (disponíveis).
+     * Cacheada sob a chave fixa 'disponiveis'.
+     */
     @Override
+    @Cacheable(value = "restaurantes", key = "'disponiveis'")
     public List<RestauranteResponse> buscarRestaurantesDisponiveis() {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesDisponiveis").startSpan();
         try {
@@ -155,7 +189,12 @@ public class RestauranteServiceImpl implements RestauranteService {
         }
     }
 
+    /**
+     * Busca restaurantes com filtros opcionais de categoria e ativo.
+     * Cacheada com chave composta.
+     */
     @Override
+    @Cacheable(value = "restaurantes", key = "{#categoria != null ? #categoria : 'all', #ativo != null ? #ativo.toString() : 'all'}")
     public List<RestauranteResponse> buscarRestaurantesComFiltros(String categoria, Boolean ativo) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesComFiltros").startSpan();
         span.setAttribute("categoria", categoria == null ? "null" : categoria);
@@ -184,7 +223,13 @@ public class RestauranteServiceImpl implements RestauranteService {
         }
     }
 
+    /**
+     * Alterna status ativo/inativo do restaurante.
+     * Evita cache desatualizado removendo a entrada da cache após alteração.
+     * Valida permissão: só ADMIN ou dono pode alterar.
+     */
     @Override
+    @CacheEvict(value = "restaurantes", key = "#id")
     public RestauranteResponse alterarStatusRestaurante(Long id) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.alterarStatusRestaurante").startSpan();
         span.setAttribute("restauranteId", id);
@@ -215,6 +260,10 @@ public class RestauranteServiceImpl implements RestauranteService {
         }
     }
 
+    /**
+     * Calcula taxa de entrega com regra simples: se CEP começa com "01", taxa é reduzida à metade.
+     * Caso contrário, retorna taxa original.
+     */
     @Override
     public BigDecimal calcularTaxaEntrega(Long restauranteId, String cep) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.calcularTaxaEntrega").startSpan();
@@ -239,6 +288,10 @@ public class RestauranteServiceImpl implements RestauranteService {
         }
     }
 
+    /**
+     * Busca restaurantes próximos por prefixo do CEP (3 primeiros caracteres do CEP).
+     * Filtra restaurantes cujo endereço contenha esse prefixo.
+     */
     @Override
     public List<RestauranteResponse> buscarRestaurantesProximos(String cep) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.buscarRestaurantesProximos").startSpan();
@@ -266,11 +319,17 @@ public class RestauranteServiceImpl implements RestauranteService {
         }
     }
 
+    /**
+     * Método auxiliar para buscar restaurante ou lançar exceção se não encontrado.
+     */
     private Restaurante buscarOuLancar(Long id) {
         return restauranteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurante não encontrado com ID: " + id));
     }
 
+    /**
+     * Verifica se o usuário autenticado é o dono do restaurante.
+     */
     @Override
     public boolean isOwner(Long restauranteId) {
         Restaurante restaurante = buscarOuLancar(restauranteId);
@@ -278,7 +337,12 @@ public class RestauranteServiceImpl implements RestauranteService {
         return restaurante.getUsuario() != null && restaurante.getUsuario().getId().equals(logado.getId());
     }
 
+    /**
+     * Remove restaurante, limpando a cache da chave específica após remoção.
+     * Valida permissão: só ADMIN ou dono pode remover.
+     */
     @Override
+    @CacheEvict(value = "restaurantes", key = "#id")
     public void removerRestaurante(Long id) {
         Span span = tracer.spanBuilder("RestauranteServiceImpl.removerRestaurante").startSpan();
         span.setAttribute("restauranteId", id);

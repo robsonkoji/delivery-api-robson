@@ -17,6 +17,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -55,6 +58,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
+    @CachePut(value = "produtos", key = "#result.id")
     public ProdutoResponse cadastrarProduto(ProdutoRequest request) {
         Span span = tracer.spanBuilder("ProdutoServiceImpl.cadastrarProduto").startSpan();
         span.setAttribute("restauranteId", request.getRestauranteId());
@@ -89,6 +93,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
+    @Cacheable(value = "produtos", key = "#restauranteId")
     public List<ProdutoResponse> buscarProdutosPorRestaurante(Long restauranteId) {
         Span span = tracer.spanBuilder("ProdutoServiceImpl.buscarProdutosPorRestaurante").startSpan();
         span.setAttribute("restauranteId", restauranteId);
@@ -105,6 +110,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
+    @Cacheable(value = "produtos", key = "#id")
     public ProdutoResponse buscarProdutoPorId(Long id) {
         Span span = tracer.spanBuilder("ProdutoServiceImpl.buscarProdutoPorId").startSpan();
         span.setAttribute("produtoId", id);
@@ -134,6 +140,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
+    @CachePut(value = "produtos", key = "#id")
     public ProdutoResponse atualizarProduto(Long id, ProdutoRequest request) {
         Span span = tracer.spanBuilder("ProdutoServiceImpl.atualizarProduto").startSpan();
         span.setAttribute("produtoId", id);
@@ -177,6 +184,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
+    @CacheEvict(value = "produtos", key = "#id")
     public ProdutoResponse alterarDisponibilidade(Long id, boolean disponivel) {
         Span span = tracer.spanBuilder("ProdutoServiceImpl.alterarDisponibilidade").startSpan();
         span.setAttribute("produtoId", id);
@@ -205,6 +213,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
+    @Cacheable(value = "produtos", key = "#categoria")
     public List<ProdutoResponse> buscarProdutosPorCategoria(String categoria) {
         Span span = tracer.spanBuilder("ProdutoServiceImpl.buscarProdutosPorCategoria").startSpan();
         span.setAttribute("categoria", categoria);
@@ -221,6 +230,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
+    @CacheEvict(value = "produtos", key = "#id")
     public ProdutoResponse removerProduto(Long id) {
         Span span = tracer.spanBuilder("ProdutoServiceImpl.removerProduto").startSpan();
         span.setAttribute("produtoId", id);
@@ -248,6 +258,7 @@ public class ProdutoServiceImpl implements ProdutoService {
     }
 
     @Override
+    @Cacheable(value = "produtos", key = "#nome")
     public List<ProdutoResponse> buscarProdutosPorNome(String nome) {
         Span span = tracer.spanBuilder("ProdutoServiceImpl.buscarProdutosPorNome").startSpan();
         span.setAttribute("nomeBusca", nome);
