@@ -18,22 +18,22 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@ActiveProfiles("test")
+@ActiveProfiles("test")  // Define perfil "test" para configurações específicas de teste
 class CacheIntegrationTest {
 
     @Autowired
-    private RestauranteService restauranteService;
+    private RestauranteService restauranteService;  // Serviço a ser testado
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;  // Template genérico para manipular Redis com objetos
 
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private StringRedisTemplate stringRedisTemplate;  // Template para manipular Redis com strings
 
     @BeforeEach
     @SuppressWarnings("deprecation")
     void setup() {
-        // Garante que a ConnectionFactory não seja null
+        // Antes de cada teste, limpa o banco Redis para garantir ambiente limpo
         var connectionFactory = Objects.requireNonNull(redisTemplate.getConnectionFactory(), "RedisConnectionFactory não pode ser nulo");
         var connection = connectionFactory.getConnection();
         connection.flushDb();
@@ -41,7 +41,7 @@ class CacheIntegrationTest {
 
     @Test
     void deveArmazenarNoCacheAposPrimeiraChamada() {
-        // Cria um restaurante para testar cache
+        // Prepara objeto RestauranteRequest com dados para cadastro
         RestauranteRequest request = new RestauranteRequest();
         request.setNome("Restaurante Teste");
         request.setCategoria("Italiana");
@@ -49,22 +49,24 @@ class CacheIntegrationTest {
         request.setTelefone("11999999999");
         request.setEndereco("Rua das Flores, 123 00000-000");
 
-        // Cadastra o restaurante (persistência + cache)
+        // Cadastra o restaurante: operação deve salvar no banco e atualizar o cache
         RestauranteResponse cadastrado = restauranteService.cadastrarRestaurante(request);
 
-        // Primeira chamada — busca no banco e popula cache
+        // Primeira busca pelo restaurante por ID: deve buscar no banco e armazenar no cache
         RestauranteResponse r1 = restauranteService.buscarRestaurantePorId(cadastrado.getId());
 
-        // Segunda chamada — busca no cache
+        // Segunda busca pelo mesmo restaurante: deve obter diretamente do cache
         RestauranteResponse r2 = restauranteService.buscarRestaurantePorId(cadastrado.getId());
 
-        // Validar que ambas chamadas retornam o mesmo objeto (igualdade lógica)
+        // Verifica se os dois objetos retornados são iguais em termos de conteúdo (igualdade lógica)
         assertThat(r1).isEqualTo(r2);
 
-        // Verificar as chaves armazenadas no Redis com prefixo correto
+        // Consulta as chaves do Redis que contenham o prefixo 'restaurantes'
         Set<String> keys = stringRedisTemplate.keys("*restaurantes*");
 
         System.out.println("Chaves no Redis: " + keys);
+
+        // Asserção para garantir que pelo menos uma chave de restaurante está no cache Redis
         assertThat(keys)
             .as("Verificar que existe pelo menos uma chave referente a restaurantes no Redis")
             .isNotEmpty();
