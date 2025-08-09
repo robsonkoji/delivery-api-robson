@@ -10,6 +10,7 @@ import com.deliverytech.delivery.enums.Role;
 import com.deliverytech.delivery.enums.StatusPedido;
 import com.deliverytech.delivery.exception.BusinessException;
 import com.deliverytech.delivery.mapper.PedidoMapper;
+import com.deliverytech.delivery.metrics.PedidoMetrics;
 import com.deliverytech.delivery.repository.*;
 import com.deliverytech.delivery.service.impl.PedidoServiceImpl;
 
@@ -39,10 +40,11 @@ class PedidoServiceTest {
     @Mock private ClienteRepository clienteRepository;
     @Mock private RestauranteRepository restauranteRepository;
     @Mock private ProdutoRepository produtoRepository;
-    @Mock private PedidoMapper pedidoMapper; // mocka o mapper para evitar NPE
+    @Mock private PedidoMapper pedidoMapper;
+    @Mock private PedidoMetrics pedidoMetrics; // Adicionado para evitar NPE
 
     @InjectMocks
-    private PedidoServiceImpl pedidoService; // Mockito injeta todos os mocks
+    private PedidoServiceImpl pedidoService;
 
     private Usuario usuarioCliente;
     private Cliente cliente;
@@ -94,28 +96,31 @@ class PedidoServiceTest {
         when(restauranteRepository.findById(restaurante.getId())).thenReturn(Optional.of(restaurante));
         when(produtoRepository.findById(produto.getId())).thenReturn(Optional.of(produto));
 
+        // Simula o timer para não quebrar o teste
+        when(pedidoMetrics.startTimer()).thenReturn(null);
+        doNothing().when(pedidoMetrics).stopTimer(any(), any(), any());
+        doNothing().when(pedidoMetrics).incrementarPedidosPorStatus(any());
+
         // Pedido salvo retorna com id e status
         when(pedidoRepository.save(any())).thenAnswer(invocation -> {
             Pedido p = invocation.getArgument(0, Pedido.class);
             p.setId(500L);
-            p.setStatus(StatusPedido.CRIADO);
+            p.setStatus(StatusPedido.PENDENTE);
             return p;
         });
 
-        // Mapper padrão para sucesso (será substituído nos testes específicos se necessário)
+        // Mapper padrão para sucesso
         when(pedidoMapper.toResponse(any())).thenAnswer(invocation -> {
             Pedido pedido = invocation.getArgument(0, Pedido.class);
             PedidoResponse resp = new PedidoResponse();
             resp.setId(pedido.getId());
             resp.setStatus(pedido.getStatus());
-            // cliente e restaurante no response
             ClienteResponse cr = new ClienteResponse();
             cr.setId(cliente.getId());
             resp.setCliente(cr);
             RestauranteResponse rr = new RestauranteResponse();
             rr.setId(restaurante.getId());
             resp.setRestaurante(rr);
-            // total = itens + taxa
             BigDecimal subtotal = produto.getPreco().multiply(new BigDecimal(2));
             resp.setTaxaEntrega(restaurante.getTaxaEntrega());
             resp.setTotal(subtotal.add(restaurante.getTaxaEntrega()));
@@ -134,7 +139,7 @@ class PedidoServiceTest {
         PedidoResponse response = pedidoService.criarPedido(request);
 
         assertNotNull(response, "Resposta do pedido não pode ser null");
-        assertEquals(StatusPedido.CRIADO, response.getStatus());
+        assertEquals(StatusPedido.PENDENTE, response.getStatus());
         assertEquals(cliente.getId(), response.getCliente().getId());
         assertNotNull(response.getRestaurante(), "Restaurante no response deveria estar preenchido");
         assertEquals(restaurante.getId(), response.getRestaurante().getId());
@@ -143,10 +148,9 @@ class PedidoServiceTest {
         BigDecimal esperadoTotal = esperadoItens.add(restaurante.getTaxaEntrega());
         assertEquals(0, response.getTotal().compareTo(esperadoTotal));
 
-        // Verifica que o mapper foi chamado com o pedido persistido
         ArgumentCaptor<Pedido> captor = ArgumentCaptor.forClass(Pedido.class);
         verify(pedidoMapper).toResponse(captor.capture());
-        assertEquals(StatusPedido.CRIADO, captor.getValue().getStatus());
+        assertEquals(StatusPedido.PENDENTE, captor.getValue().getStatus());
     }
 
     @Test

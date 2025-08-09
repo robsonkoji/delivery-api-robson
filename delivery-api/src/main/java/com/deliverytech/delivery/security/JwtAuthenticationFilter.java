@@ -22,6 +22,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
+    private final JwtTokenBlacklist jwtTokenBlacklist;
 
     @Override
     protected void doFilterInternal(
@@ -47,6 +48,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String token = authHeader.substring(7);
         final String username;
+
+        if (jwtTokenBlacklist.isBlacklisted(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token inválido (logout realizado).");
+            return;
+        }
 
         try {
             username = jwtUtil.extractUsername(token);

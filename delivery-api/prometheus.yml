@@ -1,0 +1,34 @@
+global:
+  scrape_interval: 15s            # Intervalo padrão para coleta de métricas
+  evaluation_interval: 15s        # Intervalo para avaliar regras e alertas
+
+rule_files:
+  - "prometheus_rules/Alerts.yml" # Arquivo com regras de alerta
+
+scrape_configs:
+  # Scrape do próprio Prometheus
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Scrape das métricas da API Delivery via actuator
+  - job_name: 'demo-test'
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['delivery-api:8080']
+
+  # Scrape do health check via Blackbox Exporter
+  - job_name: 'delivery-api-health'
+    metrics_path: /probe                   # Path do blackbox-exporter para probe
+    params:
+      module: [http_2xx]                   # Módulo de teste HTTP 2xx configurado no blackbox.yml
+    static_configs:
+      - targets:
+          - http://delivery-api:8080/actuator/health
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target       # Passa a URL alvo para o parâmetro 'target'
+      - source_labels: [__param_target]
+        target_label: instance             # Rótulo 'instance' recebe o alvo real
+      - target_label: __address__
+        replacement: blackbox-exporter:9115  # Endpoint do blackbox-exporter no docker-compose

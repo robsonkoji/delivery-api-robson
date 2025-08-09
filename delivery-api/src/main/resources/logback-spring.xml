@@ -1,0 +1,70 @@
+<configuration scan="true">
+
+    <!-- Variáveis -->
+    <property name="LOG_PATH" value="logs" />
+    <property name="APP_NAME" value="delivery-api" />
+
+    <!-- Timestamp global -->
+    <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss" />
+
+    <!-- Appender Console com saída JSON -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <!-- Timestamp UTC -->
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+
+                <!-- Nível do log -->
+                <level />
+
+                <!-- Logger -->
+                <loggerName />
+
+                <!-- Mensagem -->
+                <message />
+
+                <!-- Correlation ID do MDC -->
+                <mdcFields>
+                    <fieldName>correlationId</fieldName>
+                </mdcFields>
+
+                <!-- Stack trace da exceção -->
+                <stackTrace />
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Appender arquivo com rotação diária e histórico de 30 dias -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp />
+                <level />
+                <loggerName />
+                <message />
+                <mdcFields>
+                    <fieldName>correlationId</fieldName>
+                </mdcFields>
+                <stackTrace />
+            </providers>
+        </encoder>
+    </appender>
+
+    <!-- Loggers específicos -->
+    <logger name="org.springframework" level="INFO" />
+    <logger name="com.deliverytech.delivery" level="DEBUG" />
+
+    <!-- Root logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+
+</configuration>

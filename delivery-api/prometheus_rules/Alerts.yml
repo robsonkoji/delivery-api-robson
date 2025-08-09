@@ -1,0 +1,212 @@
+groups:
+  - name: jvm-alerts
+    rules:
+      # Uso do heap da JVM acima de 80%
+      - alert: JVMHeapUsageHigh
+        expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.8
+        for: 2m
+        labels:
+          severity: critical
+          job: spring-boot-app
+        annotations:
+          summary: "Uso de heap JVM alto (acima de 80%)"
+          description: "Heap JVM está usando mais de 80% da capacidade máxima de {{ $labels.instance }} (job={{ $labels.job }})."
+
+      # Uso da memória non-heap acima de 80%
+      - alert: JVMNonHeapUsageHigh
+        expr: jvm_memory_used_bytes{area="nonheap"} / jvm_memory_max_bytes{area="nonheap"} > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          job: spring-boot-app
+        annotations:
+          summary: "Uso de memória non-heap JVM alto (acima de 80%)"
+          description: "Memória non-heap JVM está acima de 80% da capacidade."
+
+      # Número elevado de threads vivas na JVM (mais que 300)
+      - alert: JVMHighThreads
+        expr: jvm_threads_live_threads > 300
+        for: 2m
+        labels:
+          severity: warning
+          job: spring-boot-app
+        annotations:
+          summary: "Número de threads vivas JVM elevado"
+          description: "Há mais de 300 threads vivas rodando na JVM."
+
+      # Muitas pausas por Garbage Collection (> 10s em 5 minutos)
+      - alert: JVMHighGarbageCollection
+        expr: increase(jvm_gc_pause_seconds_sum[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+          job: spring-boot-app
+        annotations:
+          summary: "Muitas pausas por Garbage Collection na JVM"
+          description: "A JVM teve mais de 10 segundos totais de pausa por GC nos últimos 5 minutos."
+
+      # Uso elevado de CPU pelo processo JVM (> 80%)
+      - alert: JVMHighCpuUsage
+        expr: process_cpu_usage > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          job: spring-boot-app
+        annotations:
+          summary: "Uso elevado de CPU pela JVM"
+          description: "Uso de CPU pela JVM está acima de 80%."
+
+  - name: http-throughput-alerts
+    rules:
+      # Throughput HTTP alto (> 100 req/s)
+      - alert: HttpThroughputTooHigh
+        expr: sum(rate(http_server_requests_seconds_count[1m])) > 100
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Throughput HTTP muito alto"
+          description: "A aplicação está processando mais de 100 requisições por segundo."
+
+      # Throughput HTTP muito baixo (< 0.1 req/s)
+      - alert: HttpThroughputTooLow
+        expr: sum(rate(http_server_requests_seconds_count[1m])) < 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Throughput HTTP muito baixo"
+          description: "A aplicação está com menos de 0.1 req/s, pode estar inativa ou com problemas."
+
+  - name: http-error-alerts
+    rules:
+      # Alta taxa de erros HTTP 5xx (> 1 erro/s)
+      - alert: HighHttp5xxErrorRate
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[1m])) > 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alta taxa de erro HTTP 5xx"
+          description: "Mais de 1 erro 5xx por segundo nos últimos 2 minutos."
+
+      # Taxa de erros 5xx acima de 5%
+      - alert: HighErrorRate
+        expr: (
+          sum(rate(http_server_requests_seconds_count{status=~"5.."}[1m]))
+          /
+          sum(rate(http_server_requests_seconds_count[1m]))
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Erro rate acima de 5%"
+          description: "Mais de 5% das requisições retornaram erro 5xx nos últimos 2 minutos."
+
+  - name: db-connection-alerts
+    rules:
+      # Uso alto do pool de conexões HikariCP (> 80%)
+      - alert: HighDBConnectionUsage
+        expr: hikaricp_connections_active / hikaricp_connections_max > 0.8
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Uso alto de conexões com o banco"
+          description: "Mais de 80% das conexões do pool HikariCP estão em uso no job {{ $labels.job }}."
+
+      # Muitas threads aguardando conexão no pool (> 5)
+      - alert: DBConnectionWaits
+        expr: hikaricp_connections_pending > 5
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Muitas requisições aguardando conexão com o banco"
+          description: "Mais de 5 threads aguardando conexão no HikariCP ({{ $labels.instance }})."
+
+  - name: node-alerts
+    rules:
+      # Uso alto de CPU (> 90%)
+      - alert: NodeHighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Uso de CPU alto no nó"
+          description: "A CPU está com uso acima de 90% nos últimos 5 minutos."
+
+      # Uso alto de memória (> 85%)
+      - alert: NodeHighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Uso de memória alto no nó"
+          description: "Mais de 85% da memória total está em uso."
+
+      # Pouco espaço em disco (< 10%)
+      - alert: NodeDiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pouco espaço em disco no nó"
+          description: "Menos de 10% do espaço em disco disponível na partição raiz (/)."
+
+      # Alta taxa de erros de I/O em disco
+      - alert: NodeDiskIOErrors
+        expr: increase(node_disk_io_time_seconds_total[5m]) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Possíveis problemas de disco no nó"
+          description: "Aumento significativo no tempo de I/O no disco detectado."
+
+      # Carga alta no sistema (load average maior que CPUs)
+      - alert: NodeHighLoad
+        expr: node_load1 > count(node_cpu_seconds_total{mode="idle"}) by (instance)
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Carga alta no nó"
+          description: "Carga média do sistema maior que o número de CPUs disponíveis."
+
+  - name: delivery-api-alerts
+    rules:
+      # Latência alta (> 1s no 95º percentil)
+      - alert: HighRequestLatency
+        expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le)) > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alta latência detectada na delivery-api"
+          description: "Latência no serviço delivery-api está acima de 1 segundo no percentil 95 por mais de 2 minutos."
+
+      # Taxa alta de erros 5xx (> 5% nos últimos 5 minutos)
+      - alert: HighErrorRate
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) 
+              / sum(rate(http_server_requests_seconds_count[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alta taxa de erros 5xx na delivery-api"
+          description: "Mais de 5% das requisições estão falhando com erro 5xx nos últimos 5 minutos."
+
+      # Poucos usuários ativos (menos de 1 usuário ativo)
+      - alert: FewActiveUsers
+        expr: usuarios_ativos < 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Nenhum usuário ativo detectado"
+          description: "Não há usuários ativos na aplicação delivery-api há mais de 1 minuto."

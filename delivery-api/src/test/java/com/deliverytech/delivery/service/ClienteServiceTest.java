@@ -3,20 +3,20 @@ package com.deliverytech.delivery.service;
 import com.deliverytech.delivery.dto.request.ClienteRequest;
 import com.deliverytech.delivery.entity.Cliente;
 import com.deliverytech.delivery.exception.BusinessException;
+import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ClienteRepository;
 import com.deliverytech.delivery.service.impl.ClienteServiceImpl;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,19 +25,22 @@ class ClienteServiceTest {
     @Mock
     private ClienteRepository clienteRepository;
 
-    @InjectMocks
-    private ClienteServiceImpl clienteService;
+    private ClienteServiceImpl clienteService;  // Sem @InjectMocks!
 
     private Cliente cliente;
 
     @BeforeEach
     void setUp() {
+        // Instancia manual usando construtor sem MeterRegistry
+        clienteService = new ClienteServiceImpl(clienteRepository);
+
         cliente = new Cliente();
         cliente.setId(1L);
         cliente.setNome("Robson");
         cliente.setEmail("robson@email.com");
         cliente.setTelefone("11999999999");
         cliente.setEndereco("Rua A");
+        cliente.setAtivo(true);
     }
 
     @Test
@@ -78,7 +81,6 @@ class ClienteServiceTest {
     void buscarPorId_Inexistente() {
         when(clienteRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> clienteService.buscarClientePorId(1L));
+        assertThrows(EntityNotFoundException.class, () -> clienteService.buscarClientePorId(1L));
     }
-
 }

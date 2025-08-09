@@ -2,6 +2,10 @@ package com.deliverytech.delivery.service.impl;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.deliverytech.delivery.dto.request.ClienteRequest;
@@ -11,107 +15,292 @@ import com.deliverytech.delivery.exception.EntityNotFoundException;
 import com.deliverytech.delivery.repository.ClienteRepository;
 import com.deliverytech.delivery.service.ClienteService;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.Gauge;
+
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+
 @Service
 public class ClienteServiceImpl implements ClienteService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ClienteServiceImpl.class);
+
     private final ClienteRepository clienteRepository;
+    private final MeterRegistry meterRegistry;
+    private final Tracer tracer = GlobalOpenTelemetry.getTracer("delivery-api");
+
+    @Autowired
+    public ClienteServiceImpl(ClienteRepository clienteRepository, MeterRegistry meterRegistry) {
+        this.clienteRepository = clienteRepository;
+        this.meterRegistry = meterRegistry;
+
+        if (this.meterRegistry != null) {
+            Gauge.builder("clientes.ativos.total", this, ClienteServiceImpl::contarClientesAtivos)
+                 .description("Número de clientes ativos")
+                 .register(meterRegistry);
+        }
+    }
 
     public ClienteServiceImpl(ClienteRepository clienteRepository) {
         this.clienteRepository = clienteRepository;
+        this.meterRegistry = null;
+    }
+
+    private String getCorrelationId() {
+        String correlationId = MDC.get("correlationId");
+        return correlationId != null ? correlationId : "N/A";
+    }
+
+    private RuntimeException logAndWrap(String msg, Exception ex) {
+        logger.error("[{}] {}", getCorrelationId(), msg, ex);
+        return new RuntimeException(msg, ex);
     }
 
     @Override
     public Cliente cadastrarCliente(ClienteRequest request) {
-        if (clienteRepository.existsByEmail(request.getEmail())) {
-            throw new BusinessException("Cliente com email já cadastrado");
+        Span span = tracer.spanBuilder("ClienteService.cadastrarCliente").startSpan();
+        Timer.Sample sample = meterRegistry != null ? Timer.start(meterRegistry) : null;
+        try {
+            span.setAttribute("cliente.email", request.getEmail());
+            span.setAttribute("cliente.nome", request.getNome());
+
+            if (clienteRepository.existsByEmail(request.getEmail())) {
+                span.setAttribute("erro", "email_duplicado");
+                throw new BusinessException("Cliente com email já cadastrado");
+            }
+
+            Cliente cliente = new Cliente();
+            cliente.setNome(request.getNome());
+            cliente.setEmail(request.getEmail());
+            cliente.setTelefone(request.getTelefone());
+            cliente.setEndereco(request.getEndereco());
+            cliente.setAtivo(true);
+
+            Cliente salvo = clienteRepository.save(cliente);
+
+            if (meterRegistry != null) {
+                meterRegistry.counter("clientes.cadastrados.total").increment();
+            }
+
+            logger.info("[{}] Cliente cadastrado com sucesso: id={}, email={}", getCorrelationId(), salvo.getId(), salvo.getEmail());
+            span.setAttribute("cliente.id", salvo.getId());
+            return salvo;
+        } catch (BusinessException bex) {
+            logger.warn("[{}] BusinessException ao cadastrar cliente: {}", getCorrelationId(), bex.getMessage());
+            throw bex;
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro ao cadastrar cliente com email " + request.getEmail(), ex);
+        } finally {
+            if (sample != null) {
+                sample.stop(meterRegistry.timer("clientes.cadastro.tempo"));
+            }
+            span.end();
         }
+    }
 
-        Cliente cliente = new Cliente();
-        cliente.setNome(request.getNome());
-        cliente.setEmail(request.getEmail());
-        cliente.setTelefone(request.getTelefone());
-        cliente.setEndereco(request.getEndereco());
-        cliente.setAtivo(true);
-
-        return clienteRepository.save(cliente);
+    private double contarClientesAtivos() {
+        return clienteRepository.countByAtivoTrue();
     }
 
     @Override
     public Cliente buscarClientePorId(Long id) {
-        return clienteRepository.findById(id)
+        Span span = tracer.spanBuilder("ClienteService.buscarClientePorId").startSpan();
+        span.setAttribute("cliente.id", id);
+        try {
+            Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com ID: " + id));
+            logger.debug("[{}] Cliente encontrado por ID: {}", getCorrelationId(), id);
+            return cliente;
+        } catch (EntityNotFoundException ex) {
+            logger.warn("[{}] Cliente não encontrado por ID: {}", getCorrelationId(), id);
+            throw ex;
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro inesperado ao buscar cliente por ID " + id, ex);
+        } finally {
+            span.end();
+        }
     }
 
     @Override
     public Cliente buscarClientePorEmail(String email) {
-        return clienteRepository.findByEmail(email)
+        Span span = tracer.spanBuilder("ClienteService.buscarClientePorEmail").startSpan();
+        span.setAttribute("cliente.email", email);
+        try {
+            Cliente cliente = clienteRepository.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com email: " + email));
+            logger.debug("[{}] Cliente encontrado por email: {}", getCorrelationId(), email);
+            return cliente;
+        } catch (EntityNotFoundException ex) {
+            logger.warn("[{}] Cliente não encontrado por email: {}", getCorrelationId(), email);
+            throw ex;
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro inesperado ao buscar cliente por email " + email, ex);
+        } finally {
+            span.end();
+        }
     }
 
     @Override
     public Cliente atualizarCliente(Long id, ClienteRequest request) {
-        Cliente cliente = buscarClientePorId(id);
+        Span span = tracer.spanBuilder("ClienteService.atualizarCliente").startSpan();
+        span.setAttribute("cliente.id", id);
+        try {
+            Cliente cliente = buscarClientePorId(id);
 
-        if (clienteRepository.existsByEmail(request.getEmail()) &&
-            !cliente.getEmail().equals(request.getEmail())) {
-            throw new BusinessException("Cliente com email já cadastrado");
+            if (clienteRepository.existsByEmail(request.getEmail()) &&
+                !cliente.getEmail().equals(request.getEmail())) {
+                span.setAttribute("erro", "email_duplicado");
+                throw new BusinessException("Cliente com email já cadastrado");
+            }
+
+            cliente.setNome(request.getNome());
+            cliente.setEmail(request.getEmail());
+            cliente.setTelefone(request.getTelefone());
+            cliente.setEndereco(request.getEndereco());
+
+            Cliente atualizado = clienteRepository.save(cliente);
+            logger.info("[{}] Cliente atualizado: id={}, email={}", getCorrelationId(), id, atualizado.getEmail());
+            return atualizado;
+        } catch (BusinessException bex) {
+            logger.warn("[{}] BusinessException ao atualizar cliente: {}", getCorrelationId(), bex.getMessage());
+            throw bex;
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro ao atualizar cliente id " + id, ex);
+        } finally {
+            span.end();
         }
-
-        cliente.setNome(request.getNome());
-        cliente.setEmail(request.getEmail());
-        cliente.setTelefone(request.getTelefone());
-        cliente.setEndereco(request.getEndereco());
-
-        return clienteRepository.save(cliente);
     }
 
     @Override
     public Cliente ativarDesativarCliente(Long id) {
-        Cliente cliente = buscarClientePorId(id);
-        if (cliente.isAtivo()) {
-            cliente.inativar();
-        } else {
-            cliente.reativar();
+        Span span = tracer.spanBuilder("ClienteService.ativarDesativarCliente").startSpan();
+        span.setAttribute("cliente.id", id);
+        try {
+            Cliente cliente = buscarClientePorId(id);
+            if (cliente.isAtivo()) {
+                cliente.inativar();
+                logger.info("[{}] Cliente inativado: id={}", getCorrelationId(), id);
+            } else {
+                cliente.reativar();
+                logger.info("[{}] Cliente reativado: id={}", getCorrelationId(), id);
+            }
+            return clienteRepository.save(cliente);
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro ao ativar/desativar cliente id " + id, ex);
+        } finally {
+            span.end();
         }
-        return clienteRepository.save(cliente);
     }
 
     @Override
     public List<Cliente> listarClientesAtivos() {
-        return clienteRepository.findByAtivoTrue();
+        Span span = tracer.spanBuilder("ClienteService.listarClientesAtivos").startSpan();
+        try {
+            return clienteRepository.findByAtivoTrue();
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro ao listar clientes ativos", ex);
+        } finally {
+            span.end();
+        }
     }
 
     @Override
     public List<Cliente> buscarClientesPorNome(String nome) {
-        return clienteRepository.findByNomeContainingIgnoreCaseAndAtivoTrue(nome);  
+        Span span = tracer.spanBuilder("ClienteService.buscarClientesPorNome").startSpan();
+        span.setAttribute("cliente.nome", nome);
+        try {
+            return clienteRepository.findByNomeContainingIgnoreCaseAndAtivoTrue(nome);
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro ao buscar clientes por nome " + nome, ex);
+        } finally {
+            span.end();
+        }
     }
 
     @Override
     public List<Cliente> buscarClientesPorTelefone(String telefone) {
-        return clienteRepository.findByTelefoneContainingAndAtivoTrue(telefone);
+        Span span = tracer.spanBuilder("ClienteService.buscarClientesPorTelefone").startSpan();
+        span.setAttribute("cliente.telefone", telefone);
+        try {
+            return clienteRepository.findByTelefoneContainingAndAtivoTrue(telefone);
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro ao buscar clientes por telefone " + telefone, ex);
+        } finally {
+            span.end();
+        }
     }
 
     @Override
     public List<Cliente> buscarClientesPorEndereco(String endereco) {
-        return clienteRepository.findByEnderecoContainingIgnoreCaseAndAtivoTrue(endereco);
+        Span span = tracer.spanBuilder("ClienteService.buscarClientesPorEndereco").startSpan();
+        span.setAttribute("cliente.endereco", endereco);
+        try {
+            return clienteRepository.findByEnderecoContainingIgnoreCaseAndAtivoTrue(endereco);
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro ao buscar clientes por endereco " + endereco, ex);
+        } finally {
+            span.end();
+        }
     }
 
     @Override
     public Cliente inativarCliente(Long id) {
-        Cliente cliente = buscarClientePorId(id);
-        cliente.inativar();
-        return clienteRepository.save(cliente);
+        Span span = tracer.spanBuilder("ClienteService.inativarCliente").startSpan();
+        span.setAttribute("cliente.id", id);
+        try {
+            Cliente cliente = buscarClientePorId(id);
+            cliente.inativar();
+            Cliente salvo = clienteRepository.save(cliente);
+            logger.info("[{}] Cliente inativado: id={}", getCorrelationId(), id);
+            return salvo;
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro ao inativar cliente id " + id, ex);
+        } finally {
+            span.end();
+        }
     }
 
     @Override
     public Cliente ativarCliente(Long id) {
-        Cliente cliente = buscarClientePorId(id);
-        cliente.reativar();
-        return clienteRepository.save(cliente);
+        Span span = tracer.spanBuilder("ClienteService.ativarCliente").startSpan();
+        span.setAttribute("cliente.id", id);
+        try {
+            Cliente cliente = buscarClientePorId(id);
+            cliente.reativar();
+            Cliente salvo = clienteRepository.save(cliente);
+            logger.info("[{}] Cliente reativado: id={}", getCorrelationId(), id);
+            return salvo;
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro ao ativar cliente id " + id, ex);
+        } finally {
+            span.end();
+        }
     }
 
     @Override
     public List<Cliente> listarTodosClientes() {
-        return clienteRepository.findAll();
+        Span span = tracer.spanBuilder("ClienteService.listarTodosClientes").startSpan();
+        try {
+            return clienteRepository.findAll();
+        } catch (Exception ex) {
+            span.recordException(ex);
+            throw logAndWrap("Erro ao listar todos clientes", ex);
+        } finally {
+            span.end();
+        }
     }
 }
