@@ -3,24 +3,45 @@ name: CI/CD Delivery API
 on:
   push:
     branches:
-      - main # dispara o pipeline apenas para a branch main
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
 
 jobs:
-  build-and-push:
+  build-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout do código
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Login no Docker Hub usando as secrets configuradas no repositório
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build e Testes (unitários + integração)
+        run: mvn clean verify --file ./delivery-api/pom.xml
+
+  build-and-push:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
       - name: Login no Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Ajusta o contexto do Docker para apontar para a pasta onde está o Dockerfile
-      - name: Build e Push da imagem
+      - name: Build e Push da imagem Docker
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/delivery-api:latest ./delivery-api
           docker push ${{ secrets.DOCKER_USERNAME }}/delivery-api:latest
@@ -28,6 +49,7 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Deploy via SSH no servidor
         uses: appleboy/ssh-action@v0.1.10
